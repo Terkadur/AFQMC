@@ -192,7 +192,7 @@ function sweep!_symmetric(
     Θ = div(qmc.K, 2)
     Aidx = replica.Aidx
     ws = walker.ws
-    logdetGA, sgnlogdetGA = replica.logdetGA, replica.sgnlogdetGA
+    logdetGA, sgnlogdetGA = replica.logdetGA_up, replica.sgnlogdetGA_up
     φ₀ = walker.φ₀[1]
     φ₀T = walker.φ₀T[1]
     # temporal factorizations
@@ -211,10 +211,10 @@ function sweep!_symmetric(
     Ul = walker.Ul_up
     Ur = walker.Ur_up
 
-    ridx == 1 ? (G₀ = replica.G₀1;
-    G₀′ = replica.G₀2) :
-    (G₀ = replica.G₀2;
-    G₀′ = replica.G₀1)
+    ridx == 1 ? (G₀ = replica.G₀1_up;
+    G₀′ = replica.G₀2_up) :
+    (G₀ = replica.G₀2_up;
+    G₀′ = replica.G₀1_up)
 
     # propagate from θ to 2θ
     direction == 1 && begin
@@ -240,10 +240,10 @@ function sweep!_symmetric(
 
             # recompute Grover inverse
             ridx == 1 ? begin
-                logdetGA[], sgnlogdetGA[] = @views inv_Grover!(replica.GA⁻¹, G₀[Aidx, Aidx], G₀′[Aidx, Aidx], replica.ws)
+                logdetGA[], sgnlogdetGA[] = @views inv_Grover!(replica.GA⁻¹_up, G₀[Aidx, Aidx], G₀′[Aidx, Aidx], replica.ws)
             end :
             begin
-                logdetGA[], sgnlogdetGA[] = @views inv_Grover!(replica.GA⁻¹, G₀′[Aidx, Aidx], G₀[Aidx, Aidx], replica.ws)
+                logdetGA[], sgnlogdetGA[] = @views inv_Grover!(replica.GA⁻¹_up, G₀′[Aidx, Aidx], G₀[Aidx, Aidx], replica.ws)
             end
 
             cidx == 2Θ && (
@@ -291,10 +291,10 @@ function sweep!_symmetric(
 
         # recompute Grover inverse
         ridx == 1 ? begin
-            logdetGA[], sgnlogdetGA[] = @views inv_Grover!(replica.GA⁻¹, G₀[Aidx, Aidx], G₀′[Aidx, Aidx], replica.ws)
+            logdetGA[], sgnlogdetGA[] = @views inv_Grover!(replica.GA⁻¹_up, G₀[Aidx, Aidx], G₀′[Aidx, Aidx], replica.ws)
         end :
         begin
-            logdetGA[], sgnlogdetGA[] = @views inv_Grover!(replica.GA⁻¹, G₀′[Aidx, Aidx], G₀[Aidx, Aidx], replica.ws)
+            logdetGA[], sgnlogdetGA[] = @views inv_Grover!(replica.GA⁻¹_up, G₀′[Aidx, Aidx], G₀[Aidx, Aidx], replica.ws)
         end
 
         cidx == 1 && (

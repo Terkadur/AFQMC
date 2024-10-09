@@ -45,7 +45,7 @@ end
 
 function measure_Pn2!(
     sampler::EtgSampler, replica::Replica; 
-    Np::Int = size(replica.GA⁻¹,2), forwardMeasurement::Bool = false
+    Np::Int = size(replica.GA⁻¹_up,2), forwardMeasurement::Bool = false
 )
     s = sampler.s_counter[]
     Pn2₊ = sampler.Pn₊
@@ -159,8 +159,8 @@ function Pn2_estimator(
     tmpPn::AbstractMatrix{ComplexF64} = zeros(ComplexF64, L+1, L)
 )
     Aidx = replica.Aidx
-    G₁ = replica.G₀1
-    G₂ = replica.G₀2
+    G₁ = replica.G₀1_up
+    G₂ = replica.G₀2_up
     ws = replica.ws
 
     U, d, V = compute_etgHam(G₁, G₂, Aidx, ws)

@@ -288,11 +288,12 @@ function compute_Metropolis_ratio(
 
     # set alias
     Aidx = replica.Aidx
-    GA⁻¹ = replica.GA⁻¹
-    a = replica.a
-    b = replica.b
+    GA⁻¹ = replica.GA⁻¹_up
+    a = replica.a_up
+    b = replica.b_up
     λₖ = replica.λₖ
     Gτ = walker.G[1][sidx, sidx]
+    Im2GA = replica.Im2GA_up
 
     # direction=2 -> back propagation
     direction == 1 ? (
@@ -313,12 +314,12 @@ function compute_Metropolis_ratio(
         ridx == 1 ? 
             begin
                 @views mul!(a, GA⁻¹, G0τ[Aidx, sidx])
-                @views transpose_mul!(b, Gτ0[sidx, Aidx], replica.Im2GA)
+                @views transpose_mul!(b, Gτ0[sidx, Aidx], Im2GA)
             end :
             # update the second replica
             begin
-                t = replica.t
-                @views mul!(t, replica.Im2GA, G0τ[Aidx, sidx])
+                t = replica.t_up
+                @views mul!(t, Im2GA_up, G0τ[Aidx, sidx])
                 @views mul!(a, GA⁻¹, t)
                 @views copyto!(b, Gτ0[sidx, Aidx])
             end
@@ -326,19 +327,19 @@ function compute_Metropolis_ratio(
         # update the first replica
         ridx == 1 ? 
             begin
-                BG0τ = replica.t
+                BG0τ = replica.t_up
                 @views mul!(BG0τ, Bk⁻¹[Aidx, :], G0τ[:, sidx])
                 @views mul!(a, GA⁻¹, BG0τ)
 
-                Gτ0B = replica.t
+                Gτ0B = replica.t_up
                 @views transpose_mul!(Gτ0B, Gτ0[sidx, :], Bk[:, Aidx])
-                @views transpose_mul!(b, Gτ0B, replica.Im2GA)
+                @views transpose_mul!(b, Gτ0B, Im2GA)
             end : 
         # update the second replica
             begin
-                t = replica.t
+                t = replica.t_up
                 @views mul!(a, Bk⁻¹[Aidx, :], G0τ[:, sidx])
-                @views mul!(t, replica.Im2GA, a)
+                @views mul!(t, Im2GA, a)
                 @views mul!(a, GA⁻¹, t)
 
                 @views transpose_mul!(b, Gτ0[sidx, :], Bk[:, Aidx])
@@ -454,10 +455,21 @@ end
     when the sidx-th spin is flipped
 """
 function update_invGA!(replica::Replica{W, T}, ρ::Tp) where {W, T, Tp}
-    GA⁻¹ = replica.GA⁻¹
-    a = replica.a
-    b = replica.b
-    bᵀ = replica.t
+    GA⁻¹ = replica.GA⁻¹_up
+    a = replica.a_up
+    b = replica.b_up
+    bᵀ = replica.t_up
+    dGA⁻¹ = replica.ws.M
+
+    @views transpose_mul!(bᵀ, b, GA⁻¹)
+
+    kron!(dGA⁻¹, ρ, a, bᵀ)
+    @. GA⁻¹ += dGA⁻¹
+
+    GA⁻¹ = replica.GA⁻¹_dn
+    a = replica.a_dn
+    b = replica.b_dn
+    bᵀ = replica.t_dn
     dGA⁻¹ = replica.ws.M
 
     @views transpose_mul!(bᵀ, b, GA⁻¹)

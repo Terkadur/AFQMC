@@ -25,7 +25,6 @@ for (i, U) in enumerate(U_list)
 
     Pmn2_avg[:, :, i], Pmn2_err[:, :, i], Pn2_avg[:, i], Pn2_err[:, i], Pm2_avg[:, i], Pm2_err[:, i] = get_probs_stats(Pmn2_raw, Pn2_raw, Pm2_raw)
     Hn2_avg[i], Hn2_err[i], Hm2_avg[i], Hm2_err[i] = get_shannon_stats(Pn2_raw, Pm2_raw)
-    # print(Pn2_avg)
 end
 
 jldopen("./data/Pq2_LA4_N16_beta18.0.jld", "w") do file
