@@ -1,1 +1,1 @@
-"# AFQMC" 
+# AFQMC
