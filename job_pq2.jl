@@ -2,12 +2,12 @@ include("./qmc_pq2.jl")
 
 const Lx, Ly = 4, 4
 const T = hopping_matrix_Hubbard_2d(Lx, Ly, 1.0)
-const U = 1.0
+const U = -1.0
 @show U
 
 const system = GenericHubbard(
     # (Nx, Ny), (N_up, N_dn)
-    (Lx, Ly, 1), (8, 9),
+    (Lx, Ly, 1), (8, 8),
     # t, U
     T, U,
     # μ
@@ -29,7 +29,7 @@ const qmc = QMC(
     # stablization and update interval
     10, 10,
     # if force spin symmetry
-    forceSymmetry=false,
+    forceSymmetry=true,
     # debugging flag
     saveRatio=false
 )
@@ -47,5 +47,5 @@ const extsys = ExtendedSystem(system, Aidx, subsysOrdering=false)
 
 path = "./data/"
 
-filename = "Pq2_LA16_N$(sum(system.N))_U$(system.U)_beta$(system.β)_seed$(seed).jld"
+filename = "Pq2_LA$(length(Aidx))_N$(sum(system.N))_U$(system.U)_beta$(system.β)_seed$(seed).jld"
 @time run_regular_sampling_gs(extsys, qmc, φ₀, path, filename)

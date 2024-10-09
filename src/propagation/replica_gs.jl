@@ -56,15 +56,6 @@ function sweep!(
 
         jumpReplica && jump_replica!(replica,ridx)
         return nothing
-    else
-        for i in 1 : loop_number
-            sweep!_asymmetric(system, qmc, replica, walker, ridx, collect(Θ+1:2Θ))
-            sweep!_asymmetric(system, qmc, replica, walker, ridx, collect(Θ:-1:1))
-        end
-
-        jumpReplica && jump_replica!(replica,ridx)
-        return nothing
-
     end
 end
 
@@ -326,56 +317,4 @@ function jump_replica!(replica::Replica, ridx::Int)
     Im2GA[diagind(Im2GA)] .+= 1 
 
     return replica
-end
-
-
-#-------------------------------------------------------------------------------------------------------------------------------
-
-# TODO
-function local_update!_asymmetric(
-    σ::AbstractArray{Int}, j::Int, l::Int, ridx::Int, 
-    system::Hubbard, walker::HubbardWalker, replica::Replica;
-    direction::Int = 1, forceSymmetry::Bool = false,
-    useHeatbath::Bool = true, saveRatio::Bool = true
-)
-    α = walker.α # 2x2 matrix relating to auxiliary field and HS transform
-    Gτ_up = walker.G[1]
-    Gτ0_up = walker.Gτ0[1]
-    G0τ_up = walker.G0τ[1]
-    Gτ_dn = walker.G[2]
-    Gτ0_dn = walker.Gτ0[2]
-    G0τ_dn = walker.G0τ[2]
-    ws = walker.ws
-
-    σj = flip_HSField(σ[j]) # maps -1 to 1 and 1 to 2
-
-    # TODO: compute Metropolis ratio (pass in all of alpha)
-end
-
-# TODO
-function update_cluster!_asymmetric(
-    walker::HubbardWalker, replica::Replica,
-    system::Hubbard, qmc::QMC, cidx::Int, ridx::Int;
-    direction::Int = 1
-)
-    
-end
-
-# TODO
-function sweep!_asymmetric(
-    system::Hubbard, qmc::QMC, 
-    replica::Replica, walker::HubbardWalker,
-    ridx::Int, slice::Vector{Int}
-)
-    direction = slice[1] < slice[end] ? 1 : 2
-    ### set alias ###
-    Θ = div(qmc.K,2) # K is the number of time slices divided by stab_interval
-    Aidx = replica.Aidx
-    ws = walker.ws
-    logdetGA, sgnlogdetGA = replica.logdetGA, replica.sgnlogdetGA
-    φ₀_up = walker.φ₀[1]
-    φ₀T_up = walker.φ₀T[1]
-    φ₀_dn = walker.φ₀[2]
-    φ₀T_dn = walker.φ₀T[2]
-
 end
