@@ -11,7 +11,7 @@ function compute_G!(
 ) where {T,E}
     lmul!_svd(Ul, φ₀ᵀ, Bl)
     rmul!_svd(Ur, Br, φ₀)
-    mul!(G, Ur*inv(Ul*Ur), Ul)
+    mul!(G, Ur * inv(Ul * Ur), Ul)
 
     # compute G <- I - G
     for i in CartesianIndices(G)
@@ -28,19 +28,19 @@ end
     compute the ground state Green's function given the walker
 """
 function compute_G!(
-    walker::GSWalker, spin::Int; 
-    Bl::LDR = walker.Fl[spin], Br::LDR = walker.Fr[spin]
+    walker::GSWalker, spin::Int;
+    Bl::LDR=walker.Fl[spin], Br::LDR=walker.Fr[spin]
 )
     G = walker.G[spin]
     # current LDR decomposition can't deal with non-square matrix
     φ₀ = walker.φ₀[spin]
-    φ₀ᵀ= walker.φ₀T[spin]
+    φ₀ᵀ = walker.φ₀T[spin]
     Ul = walker.Ul
     Ur = walker.Ur
 
     lmul!_svd(Ul, φ₀ᵀ, Bl)
     rmul!_svd(Ur, Br, φ₀)
-    mul!(G, Ur*inv(Ul*Ur), Ul)
+    mul!(G, Ur * inv(Ul * Ur), Ul)
 
     # compute G <- I - G
     for i in CartesianIndices(G)
@@ -52,12 +52,12 @@ function compute_G!(
 end
 
 function proceed_gτ0!(
-    gτ0::AbstractMatrix, Bτ::AbstractMatrix, Gτ::AbstractMatrix, ws::LDRWorkspace; 
-    direction::Int = 1
+    gτ0::AbstractMatrix, Bτ::AbstractMatrix, Gτ::AbstractMatrix, ws::LDRWorkspace;
+    direction::Int=1
 )
     direction == 1 && begin
         mul!(gτ0, Gτ, Bτ)
-        
+
         return nothing
     end
 
@@ -67,8 +67,8 @@ function proceed_gτ0!(
 end
 
 function proceed_g0τ!(
-    g0τ::AbstractMatrix, Bτ::AbstractMatrix, Gτ::AbstractMatrix, ws::LDRWorkspace; 
-    direction::Int = 1
+    g0τ::AbstractMatrix, Bτ::AbstractMatrix, Gτ::AbstractMatrix, ws::LDRWorkspace;
+    direction::Int=1
 )
     # compute B⁻¹
     Bτ⁻¹ = ws.M′
@@ -80,7 +80,7 @@ function proceed_g0τ!(
         Bτ⁻¹ = ws.M′
         copyto!(Bτ⁻¹, Bτ)
         inv_lu!(Bτ⁻¹, ws.lu_ws)
-        
+
         mul!(g0τ, Bτ⁻¹, Gτ - I)
 
         return nothing

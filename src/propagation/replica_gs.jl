@@ -12,13 +12,13 @@
     1) update walker2 from θ to 0
 """
 function sweep!(system::Hubbard, qmc::QMC, replica::Replica)
-    Θ = div(qmc.K,2)
+    Θ = div(qmc.K, 2)
 
     walker1 = replica.walker1
     walker2 = replica.walker2
 
     if system.useChargeHST
-        
+
         sweep!_symmetric(system, qmc, replica, walker1, 1, collect(Θ+1:2Θ))
         jump_replica!(replica, 1)
 
@@ -42,19 +42,27 @@ end
     times from θ to 2θ and from θ to 0
 """
 function sweep!(
-    system::Hubbard, qmc::QMC, 
+    system::Hubbard, qmc::QMC,
     replica::Replica, walker::HubbardWalker, ridx::Int;
-    loop_number::Int = 1, jumpReplica::Bool = false
+    loop_number::Int=1, jumpReplica::Bool=false
 )
-    Θ = div(qmc.K,2)
+    Θ = div(qmc.K, 2)
 
     if system.useChargeHST || qmc.forceSymmetry
-        for i in 1 : loop_number
+        for i in 1:loop_number
             sweep!_symmetric(system, qmc, replica, walker, ridx, collect(Θ+1:2Θ))
             sweep!_symmetric(system, qmc, replica, walker, ridx, collect(Θ:-1:1))
         end
 
-        jumpReplica && jump_replica!(replica,ridx)
+        jumpReplica && jump_replica!(replica, ridx)
+        return nothing
+    else
+        for i in 1:loop_number
+            sweep!_asymmetric(system, qmc, replica, walker, ridx, collect(Θ+1:2Θ))
+            sweep!_asymmetric(system, qmc, replica, walker, ridx, collect(Θ:-1:1))
+        end
+
+        jumpReplica && jump_replica!(replica, ridx)
         return nothing
     end
 end
@@ -63,10 +71,10 @@ end
 ##### Symmetric Sweep for Charge HS Transform #####
 ###################################################
 function local_update!_symmetric(
-    σ::AbstractArray{Int}, j::Int, l::Int, ridx::Int, 
+    σ::AbstractArray{Int}, j::Int, l::Int, ridx::Int,
     system::Hubbard, walker::HubbardWalker, replica::Replica;
-    direction::Int = 1, forceSymmetry::Bool = false,
-    useHeatbath::Bool = true, saveRatio::Bool = true
+    direction::Int=1, forceSymmetry::Bool=false,
+    useHeatbath::Bool=true, saveRatio::Bool=true
 )
     α = walker.α
     Gτ = walker.G[1]
@@ -77,17 +85,17 @@ function local_update!_symmetric(
     σj = flip_HSField(σ[j])
     # compute ratios of determinants through G
     r, γ, ρ = compute_Metropolis_ratio(
-                system, replica, walker, α[1, σj], j, ridx,
-                direction=direction, forceSymmetry=forceSymmetry
-            )
+        system, replica, walker, α[1, σj], j, ridx,
+        direction=direction, forceSymmetry=forceSymmetry
+    )
     saveRatio && push!(walker.tmp_r, r)
     # accept ratio
     u = useHeatbath ? real(r) / (1 + real(r)) : real(r)
-    
+
     if rand() < u
         # accept the move, update the field and the Green's function
         walker.auxfield[j, l] *= -1
-        
+
         ### rank-1 updates ###
         # update imaginary time G
         update_Gτ0!(Gτ0, γ, Gτ, j, ws, direction=direction)
@@ -102,10 +110,10 @@ end
 function update_cluster!_symmetric(
     walker::HubbardWalker, replica::Replica,
     system::Hubbard, qmc::QMC, cidx::Int, ridx::Int;
-    direction::Int = 1
+    direction::Int=1
 )
     k = qmc.K_interval[cidx]
-    Θ = div(qmc.K,2)
+    Θ = div(qmc.K, 2)
 
     direction == 1 ? (
         # propagate from τ to τ+k
@@ -113,7 +121,7 @@ function update_cluster!_symmetric(
         Bk⁻¹ = system.Bk⁻¹;
         slice = collect(1:k);
         Bc = walker.Bc.B[cidx-Θ]
-    ) : 
+    ) :
     (
         # propagate from τ+k to τ
         Bk = system.Bk⁻¹;
@@ -137,31 +145,31 @@ function update_cluster!_symmetric(
         @views σ = walker.auxfield[:, l]
 
         # compute G <- Bk * G * Bk⁻¹ to enable fast update
-        system.useFirstOrderTrotter || begin 
-                                        wrap_G!(Gτ, Bk, Bk⁻¹, ws)
-                                        wrap_G!(Gτ0, Bk, Bk⁻¹, ws)
-                                        wrap_G!(G0τ, Bk, Bk⁻¹, ws)
-                                    end
-
-        for j in 1 : system.V
-            local_update!_symmetric(σ, j, l, ridx, 
-                                   system, walker, replica,
-                                   direction=direction,
-                                   forceSymmetry=qmc.forceSymmetry,
-                                   saveRatio=qmc.saveRatio,
-                                   useHeatbath=qmc.useHeatbath
-                                )
+        system.useFirstOrderTrotter || begin
+            wrap_G!(Gτ, Bk, Bk⁻¹, ws)
+            wrap_G!(Gτ0, Bk, Bk⁻¹, ws)
+            wrap_G!(G0τ, Bk, Bk⁻¹, ws)
         end
-        
+
+        for j in 1:system.V
+            local_update!_symmetric(σ, j, l, ridx,
+                system, walker, replica,
+                direction=direction,
+                forceSymmetry=qmc.forceSymmetry,
+                saveRatio=qmc.saveRatio,
+                useHeatbath=qmc.useHeatbath
+            )
+        end
+
         # compute G <- Bk⁻¹ * G * Bk to restore the ordering
-        system.useFirstOrderTrotter || begin 
-                                        wrap_G!(Gτ, Bk⁻¹, Bk, ws)
-                                        wrap_G!(Gτ0, Bk⁻¹, Bk, ws)
-                                        wrap_G!(G0τ, Bk⁻¹, Bk, ws)
-                                    end
+        system.useFirstOrderTrotter || begin
+            wrap_G!(Gτ, Bk⁻¹, Bk, ws)
+            wrap_G!(Gτ0, Bk⁻¹, Bk, ws)
+            wrap_G!(G0τ, Bk⁻¹, Bk, ws)
+        end
 
         @views σ = walker.auxfield[:, l]
-        imagtime_propagator!(Bl[i], σ, system, tmpmat = ws.M)
+        imagtime_propagator!(Bl[i], σ, system, tmpmat=ws.M)
 
         ### proceed to next time slice ###
         wrap_Gs!(Gτ, Gτ0, G0τ, Bl[i], ws, direction=direction)
@@ -175,13 +183,13 @@ function update_cluster!_symmetric(
 end
 
 function sweep!_symmetric(
-    system::Hubbard, qmc::QMC, 
+    system::Hubbard, qmc::QMC,
     replica::Replica, walker::HubbardWalker,
     ridx::Int, slice::Vector{Int}
 )
     direction = slice[1] < slice[end] ? 1 : 2
     ### set alias ###
-    Θ = div(qmc.K,2)
+    Θ = div(qmc.K, 2)
     Aidx = replica.Aidx
     ws = walker.ws
     logdetGA, sgnlogdetGA = replica.logdetGA, replica.sgnlogdetGA
@@ -200,8 +208,13 @@ function sweep!_symmetric(
     gτ0 = walker.gτ0
     g0τ = walker.g0τ
 
-    ridx == 1 ? (G₀ = replica.G₀1; G₀′ = replica.G₀2) : 
-                (G₀ = replica.G₀2; G₀′ = replica.G₀1)
+    Ul = walker.Ul_up
+    Ur = walker.Ur_up
+
+    ridx == 1 ? (G₀ = replica.G₀1;
+    G₀′ = replica.G₀2) :
+    (G₀ = replica.G₀2;
+    G₀′ = replica.G₀1)
 
     # propagate from θ to 2θ
     direction == 1 && begin
@@ -214,7 +227,7 @@ function sweep!_symmetric(
 
             # Gτ needs to be periodically recomputed from scratch
             mul!(FτT, Fτt, Fr, ws)
-            compute_G!(walker, 1, Bl=Fcl[i], Br=FτT)
+            compute_G!(Gτ, φ₀, φ₀T, Ul, Ur, Fcl[i], FτT)
 
             # recompute imaginary-time-displaced Green's
             @views prod_cluster!(Gτ0, gτ0[cidx:-1:Θ+1], ws.M)
@@ -223,18 +236,19 @@ function sweep!_symmetric(
 
             # recompute G₀
             mul!(FτT, Fcl[i], Fτt, ws)
-            compute_G!(G₀, φ₀, φ₀T, walker.Ul, walker.Ur, FτT, Fr)
+            compute_G!(G₀, φ₀, φ₀T, Ul, Ur, FτT, Fr)
 
             # recompute Grover inverse
             ridx == 1 ? begin
-                    logdetGA[], sgnlogdetGA[] =  @views inv_Grover!(replica.GA⁻¹, G₀[Aidx, Aidx], G₀′[Aidx, Aidx], replica.ws)
-                end :
-                begin
-                    logdetGA[], sgnlogdetGA[] =  @views inv_Grover!(replica.GA⁻¹, G₀′[Aidx, Aidx], G₀[Aidx, Aidx], replica.ws)
-                end
-            
+                logdetGA[], sgnlogdetGA[] = @views inv_Grover!(replica.GA⁻¹, G₀[Aidx, Aidx], G₀′[Aidx, Aidx], replica.ws)
+            end :
+            begin
+                logdetGA[], sgnlogdetGA[] = @views inv_Grover!(replica.GA⁻¹, G₀′[Aidx, Aidx], G₀[Aidx, Aidx], replica.ws)
+            end
+
             cidx == 2Θ && (
-                copyto!(Fl, FτT); copyto!(Gτ, G₀); 
+                copyto!(Fl, FτT);
+                copyto!(Gτ, G₀);
                 copyto!(Gτ0, Gτ);
                 copyto!(G0τ, Gτ);
                 G0τ[diagind(G0τ)] .-= 1
@@ -264,8 +278,8 @@ function sweep!_symmetric(
 
         # G needs to be periodically recomputed from scratch
         mul!(FτT, Fl, Fτt, ws)
-        compute_G!(walker, 1, Bl=FτT, Br=Fcr[i])
-        
+        compute_G!(Gτ, φ₀, φ₀T, Ul, Ur, FτT, Fcr[i])
+
         # recompute imaginary-time-displaced Green's
         @views prod_cluster!(Gτ0, gτ0[Θ:-1:cidx], ws.M)
         @views prod_cluster!(G0τ, g0τ[cidx:Θ], ws.M)
@@ -273,16 +287,16 @@ function sweep!_symmetric(
 
         # recompute G₀
         mul!(FτT, Fτt, Fcr[i], ws)
-        compute_G!(G₀, φ₀, φ₀T, walker.Ul, walker.Ur, Fl, FτT)
+        compute_G!(G₀, φ₀, φ₀T, Ul, Ur, Fl, FτT)
 
         # recompute Grover inverse
         ridx == 1 ? begin
-                logdetGA[], sgnlogdetGA[] =  @views inv_Grover!(replica.GA⁻¹, G₀[Aidx, Aidx], G₀′[Aidx, Aidx], replica.ws)
-            end :
-            begin
-                logdetGA[], sgnlogdetGA[] =  @views inv_Grover!(replica.GA⁻¹, G₀′[Aidx, Aidx], G₀[Aidx, Aidx], replica.ws)
-            end
-        
+            logdetGA[], sgnlogdetGA[] = @views inv_Grover!(replica.GA⁻¹, G₀[Aidx, Aidx], G₀′[Aidx, Aidx], replica.ws)
+        end :
+        begin
+            logdetGA[], sgnlogdetGA[] = @views inv_Grover!(replica.GA⁻¹, G₀′[Aidx, Aidx], G₀[Aidx, Aidx], replica.ws)
+        end
+
         cidx == 1 && (
             copyto!(Fr, FτT);
             copyto!(Gτ, G₀);
@@ -314,7 +328,35 @@ function jump_replica!(replica::Replica, ridx::Int)
     for i in CartesianIndices(Im2GA)
         @inbounds Im2GA[i] = -2 * G′[i]
     end
-    Im2GA[diagind(Im2GA)] .+= 1 
+    Im2GA[diagind(Im2GA)] .+= 1
 
     return replica
+end
+
+
+#-------------------------------------------------------------------------------
+
+function local_update!_asymmetric(
+    σ::AbstractArray{Int}, j::Int, l::Int, ridx::Int,
+    system::Hubbard, walker::HubbardWalker, replica::Replica;
+    direction::Int=1, forceSymmetry::Bool=false,
+    useHeatbath::Bool=true, saveRatio::Bool=true
+)
+    # TODO
+end
+
+function update_cluster!_asymmetric(
+    walker::HubbardWalker, replica::Replica,
+    system::Hubbard, qmc::QMC, cidx::Int, ridx::Int;
+    direction::Int=1
+)
+    # TODO
+end
+
+function sweep!_asymmetric(
+    system::Hubbard, qmc::QMC,
+    replica::Replica, walker::HubbardWalker,
+    ridx::Int, slice::Vector{Int}
+)
+    # TODO
 end

@@ -515,3 +515,22 @@ function wrap_Gs!(
     
     return nothing
 end
+
+
+#-------------------------------------------------------------------------------
+function compute_Metropolis_ratio_asymmetric(
+    system::System,
+    replica::Replica{W, T}, walker::W,
+    α::Ta, sidx::Int, ridx::Int;
+    direction::Int = 1, forceSymmetry::Bool = false
+) where {W, T, Ta}
+    # TODO
+
+    # α: a 2x2 matrix with aux field HS transform constants
+    # sidx: lattice index
+    # ridx: walker index
+    # direction: 1 if forward propagation, 2 if backward
+
+    # set alias
+    Aidx = replica.Aidx # partition indices
+end
