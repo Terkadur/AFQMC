@@ -3,8 +3,8 @@
 """
 
 function measure_expS2!(
-    sampler::EtgSampler, replica::Replica; 
-    direction::Int = 2, forwardMeasurement::Bool = false
+    sampler::EtgSampler, replica::Replica;
+    direction::Int=2, forwardMeasurement::Bool=false
 )
     s = sampler.s_counter[]
     p = sampler.p
@@ -19,13 +19,13 @@ function measure_expS2!(
     end
 
     p[s] = min(1, exp(2 * replica.logdetGA[]))
-    
+
     forwardMeasurement && (sampler.s_counter[] += 1)
 
     return nothing
 end
 
-function measure_Pn!(sampler::EtgSampler, walker::HubbardWalker; forwardMeasurement::Bool = false)
+function measure_Pn!(sampler::EtgSampler, walker::HubbardWalker; forwardMeasurement::Bool=false)
     s = sampler.s_counter[]
     Pn₊ = sampler.Pn₊
     Pn₋ = sampler.Pn₋
@@ -44,9 +44,10 @@ function measure_Pn!(sampler::EtgSampler, walker::HubbardWalker; forwardMeasurem
 end
 
 function measure_Pn2!(
-    sampler::EtgSampler, replica::Replica; 
-    Np::Int = size(replica.GA⁻¹_up,2), forwardMeasurement::Bool = false
+    sampler::EtgSampler, replica::Replica;
+    Np::Int=size(replica.GA⁻¹_up, 2), forwardMeasurement::Bool=false
 )
+    # TODO
     s = sampler.s_counter[]
     Pn2₊ = sampler.Pn₊
     Pn2₋ = sampler.Pn₋
@@ -66,11 +67,11 @@ end
     Stable calculation of the Grover's estimator det[GA₁GA₂ + (I- GA₁)(I - GA₂)]
 """
 function Grover_estimator(
-    GA₁::LDR{T, E}, ImGA₁::LDR{T, E}, 
-    GA₂::LDR{T, E}, ImGA₂::LDR{T, E}, 
-    ws::LDRWorkspace{T, E}; 
-    U::LDR{T, E} = similar(GA₁), V::LDR{T, E} = similar(ImGA₁)
-) where {T, E}
+    GA₁::LDR{T,E}, ImGA₁::LDR{T,E},
+    GA₂::LDR{T,E}, ImGA₂::LDR{T,E},
+    ws::LDRWorkspace{T,E};
+    U::LDR{T,E}=similar(GA₁), V::LDR{T,E}=similar(ImGA₁)
+) where {T,E}
     mul!(U, GA₁, GA₂, ws)
     mul!(V, ImGA₁, ImGA₂, ws)
     det_UpV(U, V, ws)
@@ -85,21 +86,21 @@ end
 """
 function poissbino(
     ϵ::AbstractVector{T};
-    Ns::Int64 = length(ϵ),
-    ν1::AbstractVector{T} = ϵ ./ (1 .+ ϵ),
-    ν2::AbstractVector{T} = 1 ./ (1 .+ ϵ),
-    P::AbstractMatrix{Tp} = zeros(eltype(ϵ), Ns + 1, Ns)
-) where {T<:Number, Tp<:Number}
+    Ns::Int64=length(ϵ),
+    ν1::AbstractVector{T}=ϵ ./ (1 .+ ϵ),
+    ν2::AbstractVector{T}=1 ./ (1 .+ ϵ),
+    P::AbstractMatrix{Tp}=zeros(eltype(ϵ), Ns + 1, Ns)
+) where {T<:Number,Tp<:Number}
     # Initialization
     fill!(P, zero(eltype(P)))
     P[1, 1] = ν2[1]
     P[2, 1] = ν1[1]
     # iteration over trials
-    @inbounds for i = 2 : Ns
-        P[1, i] = ν2[i] * P[1, i - 1]
+    @inbounds for i = 2:Ns
+        P[1, i] = ν2[i] * P[1, i-1]
         # iteration over number of successes
-        for j = 2 : i + 1
-            P[j, i] = ν2[i] * P[j, i - 1] + ν1[i] * P[j - 1, i - 1]
+        for j = 2:i+1
+            P[j, i] = ν2[i] * P[j, i-1] + ν1[i] * P[j-1, i-1]
         end
     end
 
@@ -108,7 +109,7 @@ end
 
 @inline fermilevel(ϵ::AbstractVector, N::Int) = begin
     Ns = length(ϵ)
-    return sqrt(abs(ϵ[Ns - N + 1] * ϵ[Ns - N]))
+    return sqrt(abs(ϵ[Ns-N+1] * ϵ[Ns-N]))
 end
 
 """
@@ -119,11 +120,11 @@ end
 """
 function poissbino_recursion(
     ϵ::AbstractVector{T};
-    Ns::Int64 = length(ϵ),
-    logPn::AbstractVector{Tp} = zeros(eltype(ϵ), Ns+1),
-    Pμ::AbstractMatrix{Tp} = zeros(eltype(ϵ), Ns+1, Ns),
-    isRescale::Bool = true
-) where {T, Tp}
+    Ns::Int64=length(ϵ),
+    logPn::AbstractVector{Tp}=zeros(eltype(ϵ), Ns + 1),
+    Pμ::AbstractMatrix{Tp}=zeros(eltype(ϵ), Ns + 1, Ns),
+    isRescale::Bool=true
+) where {T,Tp}
     isRescale || return poissbino(ϵ, P=Pμ)
 
     # 0-particle sector (empty)
@@ -131,7 +132,7 @@ function poissbino_recursion(
     # Ns-particle sector (fully filled)
     logPn[Ns+1] = sum(log.(ϵ)) + logPn[1]
     # rescale the spectrum to precisely compute each entry in Pn
-    for N = 1 : Ns-1
+    for N = 1:Ns-1
         # rescale the spectrum
         μ = fermilevel(ϵ, N)
         ϵ′ = ϵ / μ
@@ -141,7 +142,7 @@ function poissbino_recursion(
         logZμ = sum(log.(1 .+ ϵ′))
         logZ₀ = sum(log.(1 .+ ϵ))
         # compute log(Pₙ)
-        logPn[N+1] = logZμ - logZ₀ + log(Pμ[N+1, Ns]) + N*log(μ)
+        logPn[N+1] = logZμ - logZ₀ + log(Pμ[N+1, Ns]) + N * log(μ)
     end
 
     return logPn
@@ -154,9 +155,9 @@ end
     via the eigvalues of the entanglement Hamiltonian Hₐ = Gₐ₁(I - Gₐ₁)⁻¹Gₐ₂(I - Gₐ₂)⁻¹
 """
 function Pn2_estimator(
-    replica::Replica; 
-    L::Int = length(replica.Aidx), 
-    tmpPn::AbstractMatrix{ComplexF64} = zeros(ComplexF64, L+1, L)
+    replica::Replica;
+    L::Int=length(replica.Aidx),
+    tmpPn::AbstractMatrix{ComplexF64}=zeros(ComplexF64, L + 1, L)
 )
     Aidx = replica.Aidx
     G₁ = replica.G₀1_up
@@ -168,7 +169,7 @@ function Pn2_estimator(
     H = ws.M
     mul!(H, V, U)
     ϵ = eigvals(H)
-    idx = findall(x -> abs(x)>1e-10, ϵ)
+    idx = findall(x -> abs(x) > 1e-10, ϵ)
     ϵ = sort(ϵ[idx], by=abs)
     ϵ = sort(1 ./ ϵ, by=abs)
 
@@ -186,13 +187,13 @@ end
 """
 function Pn_estimator(
     G::AbstractMatrix{T}, Aidx::Vector{Int}, ws::LDRWorkspace{T,E};
-    L::Int = length(Aidx),
-    tmpPn::AbstractMatrix{ComplexF64} = zeros(ComplexF64, L+1, L)
+    L::Int=length(Aidx),
+    tmpPn::AbstractMatrix{ComplexF64}=zeros(ComplexF64, L + 1, L)
 ) where {T,E}
     # compute the SVD of GA
     GA = ws.M
     @views copyto!(GA, G[Aidx, Aidx])
-    GA_svd = svd!(GA, alg = LinearAlgebra.QRIteration())
+    GA_svd = svd!(GA, alg=LinearAlgebra.QRIteration())
     U, d, V = GA_svd
 
     # compute the eigenvalues of GA via its SVD
@@ -203,7 +204,7 @@ function Pn_estimator(
     HA = ws.M
     mul!(HA, dVt, U)
     ϵ = eigvals(HA)
-    idx = findall(x -> abs(1-x)>1e-10, ϵ)
+    idx = findall(x -> abs(1 - x) > 1e-10, ϵ)
     ϵ = (1 .- ϵ)[idx]
 
     # compute the eigenvalues of (GA⁻¹ - I)⁻¹

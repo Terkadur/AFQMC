@@ -342,7 +342,43 @@ function local_update!_asymmetric(
     direction::Int=1, forceSymmetry::Bool=false,
     useHeatbath::Bool=true, saveRatio::Bool=true
 )
-    # TODO
+    α = walker.α # 2x2 matrix relating to auxiliary field and HS transform
+    Gτ_up = walker.G[1]
+    Gτ0_up = walker.Gτ0[1]
+    G0τ_up = walker.G0τ[1]
+    Gτ_dn = walker.G[2]
+    Gτ0_dn = walker.Gτ0[2]
+    G0τ_dn = walker.G0τ[2]
+    ws = walker.ws
+
+    σj = flip_HSField(σ[j])
+
+    r, γ_up, γ_dn, ρ_up, ρ_dn = compute_Metropolis_ratio_asymmetric(
+        system, replica, walker, α, σj, j, ridx,
+        direction=direction
+    )
+    saveRatio && push!(walker.tmp_r, r)
+    # accept ratio
+    u = useHeatbath ? real(r) / (1 + real(r)) : real(r)
+
+    if rand() < u
+        # accept the move, update the field and the Green's function
+        walker.auxfield[j, l] *= -1
+
+        ### rank-1 updates ###
+        # update imaginary time G
+        update_Gτ0!(Gτ0_up, γ_up, Gτ_up, j, ws, direction=direction)
+        update_Gτ0!(Gτ0_dn, γ_dn, Gτ_dn, j, ws, direction=direction)
+
+        update_G0τ!(G0τ_up, γ_up, Gτ_up, j, ws, direction=direction)
+        update_G0τ!(G0τ_dn, γ_dn, Gτ_dn, j, ws, direction=direction)
+
+        update_G!(Gτ_up, γ_up, 1.0, j, ws, direction=direction)
+        update_G!(Gτ_dn, γ_dn, 1.0, j, ws, direction=direction)
+
+        update_invGA!(replica, ρ_up, 1)
+        update_invGA!(replica, ρ_dn, 2)
+    end
 end
 
 function update_cluster!_asymmetric(
@@ -351,6 +387,11 @@ function update_cluster!_asymmetric(
     direction::Int=1
 )
     # TODO
+
+    k = qmc.K_interval[cidx]
+    Θ = div(qmc.K, 2)
+
+    
 end
 
 function sweep!_asymmetric(

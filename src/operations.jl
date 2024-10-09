@@ -454,28 +454,30 @@ end
     GA⁻¹ = (GA₁ * GA₂ + (I-GA₁) * (I-GA₂))⁻¹
     when the sidx-th spin is flipped
 """
-function update_invGA!(replica::Replica{W, T}, ρ::Tp) where {W, T, Tp}
-    GA⁻¹ = replica.GA⁻¹_up
-    a = replica.a_up
-    b = replica.b_up
-    bᵀ = replica.t_up
-    dGA⁻¹ = replica.ws.M
+function update_invGA!(replica::Replica{W, T}, ρ::Tp, spin::Int=1) where {W, T, Tp}
+    if spin == 1
+        GA⁻¹ = replica.GA⁻¹_up
+        a = replica.a_up
+        b = replica.b_up
+        bᵀ = replica.t_up
+        dGA⁻¹ = replica.ws.M
 
-    @views transpose_mul!(bᵀ, b, GA⁻¹)
+        @views transpose_mul!(bᵀ, b, GA⁻¹)
 
-    kron!(dGA⁻¹, ρ, a, bᵀ)
-    @. GA⁻¹ += dGA⁻¹
+        kron!(dGA⁻¹, ρ, a, bᵀ)
+        @. GA⁻¹ += dGA⁻¹
+    else
+        GA⁻¹ = replica.GA⁻¹_dn
+        a = replica.a_dn
+        b = replica.b_dn
+        bᵀ = replica.t_dn
+        dGA⁻¹ = replica.ws.M
 
-    GA⁻¹ = replica.GA⁻¹_dn
-    a = replica.a_dn
-    b = replica.b_dn
-    bᵀ = replica.t_dn
-    dGA⁻¹ = replica.ws.M
+        @views transpose_mul!(bᵀ, b, GA⁻¹)
 
-    @views transpose_mul!(bᵀ, b, GA⁻¹)
-
-    kron!(dGA⁻¹, ρ, a, bᵀ)
-    @. GA⁻¹ += dGA⁻¹
+        kron!(dGA⁻¹, ρ, a, bᵀ)
+        @. GA⁻¹ += dGA⁻¹
+    end
 end
 
 """
@@ -533,10 +535,9 @@ end
 function compute_Metropolis_ratio_asymmetric(
     system::System,
     replica::Replica{W, T}, walker::W,
-    α::Ta, sidx::Int, ridx::Int;
-    direction::Int = 1, forceSymmetry::Bool = false
+    α::Ta, σj::Int, sidx::Int, ridx::Int;
+    direction::Int = 1
 ) where {W, T, Ta}
-    # TODO
 
     # α: a 2x2 matrix with aux field HS transform constants
     # sidx: lattice index
@@ -545,4 +546,102 @@ function compute_Metropolis_ratio_asymmetric(
 
     # set alias
     Aidx = replica.Aidx # partition indices
+    λₖ = replica.λₖ
+
+    GA⁻¹_up = replica.GA⁻¹_up
+    a_up = replica.a_up
+    b_up = replica.b_up
+    Gτ_up = walker.G[1][sidx, sidx]
+    Im2GA_up = replica.Im2GA_up
+
+    GA⁻¹_dn = replica.GA⁻¹_dn
+    a_dn = replica.a_dn
+    b_dn = replica.b_dn
+    Gτ_dn = walker.G[2][sidx, sidx]
+    Im2GA_dn = replica.Im2GA_dn
+
+    # direction=2 -> back propagation
+    direction == 1 ? (
+            Bk = system.Bk; # constant kinetic propagator: e^(-T dτ)
+            Bk⁻¹ = system.Bk⁻¹; # inverse: e^(T dτ)
+            G0τ_up = walker.G0τ[1]; # unequal time Green from 0 to τ
+            Gτ0_up = walker.Gτ0[1]; # unequal time Green from τ to 0
+            G0τ_dn = walker.G0τ[2];
+            Gτ0_dn = walker.Gτ0[2]
+        ) : 
+        (
+            Bk = system.Bk⁻¹; 
+            Bk⁻¹ = system.Bk;
+            G0τ_up = walker.Gτ0[1];
+            Gτ0_up = walker.G0τ[1];
+            G0τ_dn = walker.Gτ0[2];
+            Gτ0_dn = walker.G0τ[2]
+        )
+
+    # compute Γ_up = a_up * bᵀ_up
+    # update the first replica
+    ridx == 1 ? 
+        begin
+            BG0τ = replica.t_up
+            @views mul!(BG0τ, Bk⁻¹[Aidx, :], G0τ_up[:, sidx])
+            @views mul!(a_up, GA⁻¹_up, BG0τ)
+
+            Gτ0B = replica.t_up
+            @views transpose_mul!(Gτ0B, Gτ0_up[sidx, :], Bk[:, Aidx])
+            @views transpose_mul!(b_up, Gτ0B, Im2GA_up)
+        end : 
+    # update the second replica
+        begin
+            t = replica.t_up
+            @views mul!(a_up, Bk⁻¹[Aidx, :], G0τ_up[:, sidx])
+            @views mul!(t, Im2GA_up, a_up)
+            @views mul!(a_up, GA⁻¹_up, t)
+
+            @views transpose_mul!(b_up, Gτ0_up[sidx, :], Bk[:, Aidx])
+        end
+    Γ_up = transpose(a_up) * b_up
+
+    # compute Γ_dn = a_dn * bᵀ_dn
+    # update the first replica
+    ridx == 1 ? 
+        begin
+            BG0τ = replica.t_dn
+            @views mul!(BG0τ, Bk⁻¹[Aidx, :], G0τ_dn[:, sidx])
+            @views mul!(a_dn, GA⁻¹_dn, BG0τ)
+
+            Gτ0B = replica.t_dn
+            @views transpose_mul!(Gτ0B, Gτ0_dn[sidx, :], Bk[:, Aidx])
+            @views transpose_mul!(b_dn, Gτ0B, Im2GA_dn)
+        end : 
+    # update the second replica
+        begin
+            t = replica.t_dn
+            @views mul!(a_dn, Bk⁻¹[Aidx, :], G0τ_dn[:, sidx])
+            @views mul!(t, Im2GA_dn, a_dn)
+            @views mul!(a_dn, GA⁻¹_dn, t)
+
+            @views transpose_mul!(b_dn, Gτ0_dn[sidx, :], Bk[:, Aidx])
+        end
+    Γ_dn = transpose(a_dn) * b_dn
+
+
+    # regular DQMC ratio
+    d_up = 1 + α[1, σj] * (1 - Gτ_up)
+    # ratio of detgA (Grover matrix) with a thermaldynamic integration variable (λₖ)
+    dᵧ_up = (1 - α[1, σj] * Γ/d)^λₖ
+
+    # regular DQMC ratio
+    d_dn = 1 + α[2, σj] * (1 - Gτ_dn)
+    # ratio of detgA (Grover matrix) with a thermaldynamic integration variable (λₖ)
+    dᵧ_dn = (1 - α[2, σj] * Γ/d)^λₖ
+
+    r = d_up * dᵧ_up * d_dn * dᵧ_dn
+
+    γ_up = α[1, σj] / d_up
+    γ_dn = α[2, σj] / d_dn
+
+    ρ_up = α[1, σj] / (d_up - α[1, σj] * Γ_up)
+    ρ_dn = α[2, σj] / (d_dn - α[2, σj] * Γ_dn)
+
+    return r, γ_up, γ_dn, ρ_up, ρ_dn
 end
