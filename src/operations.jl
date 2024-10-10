@@ -10,7 +10,7 @@
 """
 function compute_Metropolis_ratio(
     G::Vector{T}, α::Ta, i::Int, sidx::Int
-) where {T<:AbstractMatrix, Ta}
+) where {T<:AbstractMatrix,Ta}
     d_up = 1 + α[1, i] * (1 - G[1][sidx, sidx])
     d_dn = 1 + α[2, i] * (1 - G[2][sidx, sidx])
     r = abs(d_up * d_dn)
@@ -27,14 +27,14 @@ end
 """
 function compute_Metropolis_ratio(
     G::AbstractMatrix, α::Ta, sidx::Int;
-    forceSymmetry::Bool = false
+    forceSymmetry::Bool=false
 ) where {Ta<:Number}
     d = α * (1 - G[sidx, sidx])
     # accept ratio
     r = isreal(α) ? (1 + d)^2 : (1 + d)^2 / (α + 1)
     forceSymmetry && (r = (1 + d) * conj(1 + d))
 
-    return r, d+1
+    return r, d + 1
 end
 
 function Base.kron!(C::AbstractMatrix, α::Number, a::AbstractVector, b::AbstractVector)
@@ -58,10 +58,10 @@ end
     where u = (I - G)e₁, w = Gᵀe₁
 """
 function update_G!(
-    G::AbstractMatrix{T}, 
-    α::Ta, d::Td, sidx::Int64, 
-    ws::LDRWorkspace{T, E}; direction::Int = 1
-) where {T, Ta, Td, E}
+    G::AbstractMatrix{T},
+    α::Ta, d::Td, sidx::Int64,
+    ws::LDRWorkspace{T,E}; direction::Int=1
+) where {T,Ta,Td,E}
     ImG = ws.M
     dG = ws.M′
 
@@ -105,22 +105,22 @@ end
         G ← B⁻¹ * G * B (direction = 2)
 """
 function wrap_G!(
-    G::AbstractMatrix{T}, B::AbstractMatrix{Tb}, ws::LDRWorkspace{T, E};
-    direction::Int = 1
-) where {T, Tb, E}    
+    G::AbstractMatrix{T}, B::AbstractMatrix{Tb}, ws::LDRWorkspace{T,E};
+    direction::Int=1
+) where {T,Tb,E}
 
     B⁻¹ = ws.M′
     copyto!(B⁻¹, B)
     inv_lu!(B⁻¹, ws.lu_ws)
-    
+
     direction == 1 ? (
-                        mul!(ws.M, B, G);
-                        mul!(G, ws.M, B⁻¹)
-                    ) : 
-                    (
-                        mul!(ws.M, B⁻¹, G);
-                        mul!(G, ws.M, B)
-                    )
+        mul!(ws.M, B, G);
+        mul!(G, ws.M, B⁻¹)
+    ) :
+    (
+        mul!(ws.M, B⁻¹, G);
+        mul!(G, ws.M, B)
+    )
     return G
 end
 
@@ -131,11 +131,11 @@ end
     Note: B and B⁻¹ are not necessarily matrices but can be checkerboard decompositions.
 """
 function wrap_G!(
-    G::AbstractMatrix{T}, B::Tb, B⁻¹::Tb, 
-    ws::LDRWorkspace{T, E}
-) where {T, Tb, E}
+    G::AbstractMatrix{T}, B::Tb, B⁻¹::Tb,
+    ws::LDRWorkspace{T,E}
+) where {T,Tb,E}
 
-    mul!(ws.M, B, G);
+    mul!(ws.M, B, G)
     mul!(G, ws.M, B⁻¹)
 
     return G
@@ -172,55 +172,55 @@ end
     Propagate over the full space-time lattice given the auxiliary field configuration
 """
 function build_propagator(
-    auxfield::AbstractMatrix{Int64}, system::System, qmc::QMC, ws::LDRWorkspace{T,E}; 
-    isReverse::Bool = true, K = qmc.K, K_interval = qmc.K_interval
-) where {T, E}
+    auxfield::AbstractMatrix{Int64}, system::System, qmc::QMC, ws::LDRWorkspace{T,E};
+    isReverse::Bool=true, K=qmc.K, K_interval=qmc.K_interval
+) where {T,E}
     V = system.V
     si = qmc.stab_interval
 
     # initialize partial matrix products
     Tb = eltype(system.auxfield)
     B = [Matrix{Tb}(I, V, V), Matrix{Tb}(I, V, V)]
-    MatProd = Cluster(V, 2 * K, T = Tb)
+    MatProd = Cluster(V, 2 * K, T=Tb)
     F = ldrs(B[1], 2)
-    FC = Cluster(B = ldrs(B[1], 2 * K))
+    FC = Cluster(B=ldrs(B[1], 2 * K))
 
     Bm = MatProd.B
     Bf = FC.B
 
     isReverse && begin
         for i in K:-1:1
-            for j = 1 : K_interval[i]
-            @views σ = auxfield[:, (i - 1) * si + j]
-            imagtime_propagator!(B[1], B[2], σ, system, tmpmat = ws.M)
-            Bm[i] = B[1] * Bm[i]            # spin-up
-            Bm[K + i] = B[2] * Bm[K + i]    # spin-down
+            for j = 1:K_interval[i]
+                @views σ = auxfield[:, (i-1)*si+j]
+                imagtime_propagator!(B[1], B[2], σ, system, tmpmat=ws.M)
+                Bm[i] = B[1] * Bm[i]            # spin-up
+                Bm[K+i] = B[2] * Bm[K+i]    # spin-down
+            end
+
+            # save all partial products
+            copyto!(Bf[i], F[1])
+            copyto!(Bf[K+i], F[2])
+
+            rmul!(F[1], Bm[i], ws)
+            rmul!(F[2], Bm[K+i], ws)
         end
-
-        # save all partial products
-        copyto!(Bf[i], F[1])
-        copyto!(Bf[K + i], F[2])
-
-        rmul!(F[1], Bm[i], ws)
-        rmul!(F[2], Bm[K + i], ws)
-    end
 
         return F, MatProd, FC
     end
 
     for i in 1:K
-        for j = 1 : K_interval[i]
-            @views σ = auxfield[:, (i - 1) * si + j]
-            imagtime_propagator!(B[1], B[2], σ, system, tmpmat = ws.M)
+        for j = 1:K_interval[i]
+            @views σ = auxfield[:, (i-1)*si+j]
+            imagtime_propagator!(B[1], B[2], σ, system, tmpmat=ws.M)
             Bm[i] = B[1] * Bm[i]            # spin-up
-            Bm[K + i] = B[2] * Bm[K + i]    # spin-down
+            Bm[K+i] = B[2] * Bm[K+i]    # spin-down
         end
 
         copyto!(Bf[i], F[1])
-        copyto!(Bf[K + i], F[2])
+        copyto!(Bf[K+i], F[2])
 
         lmul!(Bm[i], F[1], ws)
-        lmul!(Bm[K + i], F[2], ws)
+        lmul!(Bm[K+i], F[2], ws)
     end
 
     return F, MatProd, FC
@@ -233,22 +233,22 @@ end
 """
 function build_propagator!(
     Fc::Vector{Fact}, MatProd::Cluster{C}, ws::LDRWorkspace{T,E};
-    K = div(length(MatProd.B), 2),
-    isReverse::Bool = true, isSymmetric::Bool = false
-) where {Fact, C, T, E}
+    K=div(length(MatProd.B), 2),
+    isReverse::Bool=true, isSymmetric::Bool=false
+) where {Fact,C,T,E}
     V = size(MatProd.B[1])
-    i = eltype(ws.M) <: Real ? 1.0 : 1.0+0.0im
-    F = ldrs(Matrix(i*I, V), 2)
+    i = eltype(ws.M) <: Real ? 1.0 : 1.0 + 0.0im
+    F = ldrs(Matrix(i * I, V), 2)
 
     Bm = MatProd.B
 
-    isReverse && begin 
+    isReverse && begin
         for n in K:-1:1
             copyto!(Fc[n], F[1])
-            isSymmetric || copyto!(Fc[K + n], F[2])
+            isSymmetric || copyto!(Fc[K+n], F[2])
 
             rmul!(F[1], Bm[n], ws)
-            isSymmetric || rmul!(F[2], Bm[K + n], ws)
+            isSymmetric || rmul!(F[2], Bm[K+n], ws)
         end
 
         return F
@@ -256,12 +256,12 @@ function build_propagator!(
 
     for n in 1:K
         copyto!(Fc[n], F[1])
-        isSymmetric || copyto!(Fc[K + n], F[2])
+        isSymmetric || copyto!(Fc[K+n], F[2])
 
         lmul!(Bm[n], F[1], ws)
-        isSymmetric || lmul!(Bm[K + n], F[2], ws)
+        isSymmetric || lmul!(Bm[K+n], F[2], ws)
     end
-    
+
     return F
 end
 
@@ -281,10 +281,10 @@ end
 """
 function compute_Metropolis_ratio(
     system::System,
-    replica::Replica{W, T}, walker::W,
+    replica::Replica{W,T}, walker::W,
     α::Ta, sidx::Int, ridx::Int;
-    direction::Int = 1, forceSymmetry::Bool = false
-) where {W, T, Ta}
+    direction::Int=1, forceSymmetry::Bool=false
+) where {W,T,Ta}
 
     # set alias
     Aidx = replica.Aidx
@@ -297,63 +297,63 @@ function compute_Metropolis_ratio(
 
     # direction=2 -> back propagation
     direction == 1 ? (
-            Bk = system.Bk; 
-            Bk⁻¹ = system.Bk⁻¹;
-            G0τ = walker.G0τ[1];
-            Gτ0 = walker.Gτ0[1]
-        ) : 
-        (
-            Bk = system.Bk⁻¹; 
-            Bk⁻¹ = system.Bk;
-            G0τ = walker.Gτ0[1];
-            Gτ0 = walker.G0τ[1]
-        )
-    
+        Bk = system.Bk;
+        Bk⁻¹ = system.Bk⁻¹;
+        G0τ = walker.G0τ[1];
+        Gτ0 = walker.Gτ0[1]
+    ) :
+    (
+        Bk = system.Bk⁻¹;
+        Bk⁻¹ = system.Bk;
+        G0τ = walker.Gτ0[1];
+        Gτ0 = walker.G0τ[1]
+    )
+
     # compute Γ = a * bᵀ
     if system.useFirstOrderTrotter  # asymmetric case
-        ridx == 1 ? 
-            begin
-                @views mul!(a, GA⁻¹, G0τ[Aidx, sidx])
-                @views transpose_mul!(b, Gτ0[sidx, Aidx], Im2GA)
-            end :
-            # update the second replica
-            begin
-                t = replica.t_up
-                @views mul!(t, Im2GA_up, G0τ[Aidx, sidx])
-                @views mul!(a, GA⁻¹, t)
-                @views copyto!(b, Gτ0[sidx, Aidx])
-            end
+        ridx == 1 ?
+        begin
+            @views mul!(a, GA⁻¹, G0τ[Aidx, sidx])
+            @views transpose_mul!(b, Gτ0[sidx, Aidx], Im2GA)
+        end :
+        # update the second replica
+        begin
+            t = replica.t_up
+            @views mul!(t, Im2GA_up, G0τ[Aidx, sidx])
+            @views mul!(a, GA⁻¹, t)
+            @views copyto!(b, Gτ0[sidx, Aidx])
+        end
     else                            # symmetric case
         # update the first replica
-        ridx == 1 ? 
-            begin
-                BG0τ = replica.t_up
-                @views mul!(BG0τ, Bk⁻¹[Aidx, :], G0τ[:, sidx])
-                @views mul!(a, GA⁻¹, BG0τ)
+        ridx == 1 ?
+        begin
+            BG0τ = replica.t_up
+            @views mul!(BG0τ, Bk⁻¹[Aidx, :], G0τ[:, sidx])
+            @views mul!(a, GA⁻¹, BG0τ)
 
-                Gτ0B = replica.t_up
-                @views transpose_mul!(Gτ0B, Gτ0[sidx, :], Bk[:, Aidx])
-                @views transpose_mul!(b, Gτ0B, Im2GA)
-            end : 
+            Gτ0B = replica.t_up
+            @views transpose_mul!(Gτ0B, Gτ0[sidx, :], Bk[:, Aidx])
+            @views transpose_mul!(b, Gτ0B, Im2GA)
+        end :
         # update the second replica
-            begin
-                t = replica.t_up
-                @views mul!(a, Bk⁻¹[Aidx, :], G0τ[:, sidx])
-                @views mul!(t, Im2GA, a)
-                @views mul!(a, GA⁻¹, t)
+        begin
+            t = replica.t_up
+            @views mul!(a, Bk⁻¹[Aidx, :], G0τ[:, sidx])
+            @views mul!(t, Im2GA, a)
+            @views mul!(a, GA⁻¹, t)
 
-                @views transpose_mul!(b, Gτ0[sidx, :], Bk[:, Aidx])
-            end
+            @views transpose_mul!(b, Gτ0[sidx, :], Bk[:, Aidx])
+        end
     end
     Γ = transpose(a) * b
-    
+
     # regular DQMC ratio
     d = 1 + α * (1 - Gτ)
     # ratio of detgA (Grover matrix) with a thermaldynamic integration variable (λₖ)
-    dᵧ = (1 - α*Γ/d)^λₖ
+    dᵧ = (1 - α * Γ / d)^λₖ
     ## accept ratio
-    r = isreal(α) ? (d*dᵧ)^2 : (d*dᵧ)^2 / (α+1)
-    forceSymmetry && (r = (d*dᵧ) * conj(d*dᵧ))
+    r = isreal(α) ? (d * dᵧ)^2 : (d * dᵧ)^2 / (α + 1)
+    forceSymmetry && (r = (d * dᵧ) * conj(d * dᵧ))
 
     γ = α / d
     ρ = α / (d - α * Γ)
@@ -362,10 +362,10 @@ function compute_Metropolis_ratio(
 end
 
 function update_G0!(
-    G0::AbstractMatrix{T}, γ::Ta, 
+    G0::AbstractMatrix{T}, γ::Ta,
     Gτ0::AbstractMatrix{T}, G0τ::AbstractMatrix{T},
-    sidx::Int64, ws::LDRWorkspace{T, E}
-) where {T, Ta, E}
+    sidx::Int64, ws::LDRWorkspace{T,E}
+) where {T,Ta,E}
     dG0 = ws.M
 
     # compute (I - G)eᵢ * Gᵀeᵢ
@@ -381,11 +381,11 @@ end
     sidx-th spin is flipped
 """
 function update_Gτ0!(
-    Gτ0::AbstractMatrix{T}, γ::Ta, 
+    Gτ0::AbstractMatrix{T}, γ::Ta,
     Gτ::AbstractMatrix{T},
-    sidx::Int64, ws::LDRWorkspace{T, E};
-    direction::Int = 1
-) where {T, Ta, E}
+    sidx::Int64, ws::LDRWorkspace{T,E};
+    direction::Int=1
+) where {T,Ta,E}
     GτmI = ws.M
     dGτ0 = ws.M′
 
@@ -427,11 +427,11 @@ end
     sidx-th spin is flipped
 """
 function update_G0τ!(
-    G0τ::AbstractMatrix{T}, γ::Ta, 
+    G0τ::AbstractMatrix{T}, γ::Ta,
     Gτ::AbstractMatrix{T},
-    sidx::Int64, ws::LDRWorkspace{T, E};
-    direction::Int = 1
-) where {T, Ta, E}
+    sidx::Int64, ws::LDRWorkspace{T,E};
+    direction::Int=1
+) where {T,Ta,E}
     dG0τ = ws.M
 
     direction == 1 && begin
@@ -454,7 +454,7 @@ end
     GA⁻¹ = (GA₁ * GA₂ + (I-GA₁) * (I-GA₂))⁻¹
     when the sidx-th spin is flipped
 """
-function update_invGA!(replica::Replica{W, T}, ρ::Tp, spin::Int=1) where {W, T, Tp}
+function update_invGA!(replica::Replica{W,T}, ρ::Tp, spin::Int=1) where {W,T,Tp}
     if spin == 1
         GA⁻¹ = replica.GA⁻¹_up
         a = replica.a_up
@@ -492,13 +492,13 @@ end
 """
 function wrap_Gs!(
     Gτ::AbstractMatrix{T}, Gτ0::AbstractMatrix{T}, G0τ::AbstractMatrix{T},
-    B::Tb, ws::LDRWorkspace{T, E}; direction::Int = 1
-) where {T, Tb, E}
+    B::Tb, ws::LDRWorkspace{T,E}; direction::Int=1
+) where {T,Tb,E}
     # compute B⁻¹
     B⁻¹ = ws.M′
     copyto!(B⁻¹, B)
     inv_lu!(B⁻¹, ws.lu_ws)
-    
+
     direction == 1 && begin
         # update G(τ)
         mul!(ws.M, B, Gτ)
@@ -526,7 +526,7 @@ function wrap_Gs!(
     # update G(0,τ)
     mul!(ws.M, B⁻¹, G0τ)
     copyto!(G0τ, ws.M)
-    
+
     return nothing
 end
 
@@ -534,10 +534,10 @@ end
 #-------------------------------------------------------------------------------
 function compute_Metropolis_ratio_asymmetric(
     system::System,
-    replica::Replica{W, T}, walker::W,
+    replica::Replica{W,T}, walker::W,
     α::Ta, σj::Int, sidx::Int, ridx::Int;
-    direction::Int = 1
-) where {W, T, Ta}
+    direction::Int=1
+) where {W,T,Ta}
 
     # α: a 2x2 matrix with aux field HS transform constants
     # sidx: lattice index
@@ -562,78 +562,78 @@ function compute_Metropolis_ratio_asymmetric(
 
     # direction=2 -> back propagation
     direction == 1 ? (
-            Bk = system.Bk; # constant kinetic propagator: e^(-T dτ)
-            Bk⁻¹ = system.Bk⁻¹; # inverse: e^(T dτ)
-            G0τ_up = walker.G0τ[1]; # unequal time Green from 0 to τ
-            Gτ0_up = walker.Gτ0[1]; # unequal time Green from τ to 0
-            G0τ_dn = walker.G0τ[2];
-            Gτ0_dn = walker.Gτ0[2]
-        ) : 
-        (
-            Bk = system.Bk⁻¹; 
-            Bk⁻¹ = system.Bk;
-            G0τ_up = walker.Gτ0[1];
-            Gτ0_up = walker.G0τ[1];
-            G0τ_dn = walker.Gτ0[2];
-            Gτ0_dn = walker.G0τ[2]
-        )
+        Bk = system.Bk; # constant kinetic propagator: e^(-T dτ)
+        Bk⁻¹ = system.Bk⁻¹; # inverse: e^(T dτ)
+        G0τ_up = walker.G0τ[1]; # unequal time Green from 0 to τ
+        Gτ0_up = walker.Gτ0[1]; # unequal time Green from τ to 0
+        G0τ_dn = walker.G0τ[2];
+        Gτ0_dn = walker.Gτ0[2]
+    ) :
+    (
+        Bk = system.Bk⁻¹;
+        Bk⁻¹ = system.Bk;
+        G0τ_up = walker.Gτ0[1];
+        Gτ0_up = walker.G0τ[1];
+        G0τ_dn = walker.Gτ0[2];
+        Gτ0_dn = walker.G0τ[2]
+    )
 
     # compute Γ_up = a_up * bᵀ_up
     # update the first replica
-    ridx == 1 ? 
-        begin
-            BG0τ = replica.t_up
-            @views mul!(BG0τ, Bk⁻¹[Aidx, :], G0τ_up[:, sidx])
-            @views mul!(a_up, GA⁻¹_up, BG0τ)
+    ridx == 1 ?
+    begin
+        BG0τ = replica.t_up
+        @views mul!(BG0τ, Bk⁻¹[Aidx, :], G0τ_up[:, sidx])
+        @views mul!(a_up, GA⁻¹_up, BG0τ)
 
-            Gτ0B = replica.t_up
-            @views transpose_mul!(Gτ0B, Gτ0_up[sidx, :], Bk[:, Aidx])
-            @views transpose_mul!(b_up, Gτ0B, Im2GA_up)
-        end : 
+        Gτ0B = replica.t_up
+        @views transpose_mul!(Gτ0B, Gτ0_up[sidx, :], Bk[:, Aidx])
+        @views transpose_mul!(b_up, Gτ0B, Im2GA_up)
+    end :
     # update the second replica
-        begin
-            t = replica.t_up
-            @views mul!(a_up, Bk⁻¹[Aidx, :], G0τ_up[:, sidx])
-            @views mul!(t, Im2GA_up, a_up)
-            @views mul!(a_up, GA⁻¹_up, t)
+    begin
+        t = replica.t_up
+        @views mul!(a_up, Bk⁻¹[Aidx, :], G0τ_up[:, sidx])
+        @views mul!(t, Im2GA_up, a_up)
+        @views mul!(a_up, GA⁻¹_up, t)
 
-            @views transpose_mul!(b_up, Gτ0_up[sidx, :], Bk[:, Aidx])
-        end
+        @views transpose_mul!(b_up, Gτ0_up[sidx, :], Bk[:, Aidx])
+    end
     Γ_up = transpose(a_up) * b_up
 
     # compute Γ_dn = a_dn * bᵀ_dn
     # update the first replica
-    ridx == 1 ? 
-        begin
-            BG0τ = replica.t_dn
-            @views mul!(BG0τ, Bk⁻¹[Aidx, :], G0τ_dn[:, sidx])
-            @views mul!(a_dn, GA⁻¹_dn, BG0τ)
+    ridx == 1 ?
+    begin
+        BG0τ = replica.t_dn
+        @views mul!(BG0τ, Bk⁻¹[Aidx, :], G0τ_dn[:, sidx])
+        @views mul!(a_dn, GA⁻¹_dn, BG0τ)
 
-            Gτ0B = replica.t_dn
-            @views transpose_mul!(Gτ0B, Gτ0_dn[sidx, :], Bk[:, Aidx])
-            @views transpose_mul!(b_dn, Gτ0B, Im2GA_dn)
-        end : 
+        Gτ0B = replica.t_dn
+        @views transpose_mul!(Gτ0B, Gτ0_dn[sidx, :], Bk[:, Aidx])
+        @views transpose_mul!(b_dn, Gτ0B, Im2GA_dn)
+    end :
     # update the second replica
-        begin
-            t = replica.t_dn
-            @views mul!(a_dn, Bk⁻¹[Aidx, :], G0τ_dn[:, sidx])
-            @views mul!(t, Im2GA_dn, a_dn)
-            @views mul!(a_dn, GA⁻¹_dn, t)
+    begin
+        t = replica.t_dn
+        @views mul!(a_dn, Bk⁻¹[Aidx, :], G0τ_dn[:, sidx])
+        @views mul!(t, Im2GA_dn, a_dn)
+        @views mul!(a_dn, GA⁻¹_dn, t)
 
-            @views transpose_mul!(b_dn, Gτ0_dn[sidx, :], Bk[:, Aidx])
-        end
+        @views transpose_mul!(b_dn, Gτ0_dn[sidx, :], Bk[:, Aidx])
+    end
     Γ_dn = transpose(a_dn) * b_dn
 
 
     # regular DQMC ratio
     d_up = 1 + α[1, σj] * (1 - Gτ_up)
     # ratio of detgA (Grover matrix) with a thermaldynamic integration variable (λₖ)
-    dᵧ_up = (1 - α[1, σj] * Γ/d)^λₖ
+    dᵧ_up = (1 - α[1, σj] * Γ / d)^λₖ
 
     # regular DQMC ratio
     d_dn = 1 + α[2, σj] * (1 - Gτ_dn)
     # ratio of detgA (Grover matrix) with a thermaldynamic integration variable (λₖ)
-    dᵧ_dn = (1 - α[2, σj] * Γ/d)^λₖ
+    dᵧ_dn = (1 - α[2, σj] * Γ / d)^λₖ
 
     r = d_up * dᵧ_up * d_dn * dᵧ_dn
 

@@ -31,6 +31,7 @@ function compute_G!(
     walker::GSWalker, spin::Int;
     Bl::LDR=walker.Fl[spin], Br::LDR=walker.Fr[spin]
 )
+    println("WARNING: Please don't use this instance")
     G = walker.G[spin]
     # current LDR decomposition can't deal with non-square matrix
     φ₀ = walker.φ₀[spin]

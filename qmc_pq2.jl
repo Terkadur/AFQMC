@@ -20,11 +20,11 @@ function run_regular_sampling_gs(
     # warm-up steps
     println("Warming up")
     for i in 1:qmc.nwarmups
-        if (i - 1) % 256 < 127
+        if (i - 1) % 16 < 7
             sweep!(system, qmc, replica, walker1, 1, loop_number=1, jumpReplica=false)
-        elseif (i - 1) % 256 == 127
+        elseif (i - 1) % 16 == 7
             sweep!(system, qmc, replica, walker1, 1, loop_number=1, jumpReplica=true)
-        elseif 127 < (i - 1) % 256 < 255
+        elseif 7 < (i - 1) % 16 < 15
             sweep!(system, qmc, replica, walker2, 2, loop_number=1, jumpReplica=false)
         else
             sweep!(system, qmc, replica, walker2, 2, loop_number=1, jumpReplica=true)
@@ -38,11 +38,11 @@ function run_regular_sampling_gs(
     # measurements
     println("Measuring")
     for i in 1:qmc.nsamples
-        if (i - 1) % 256 < 127
+        if (i - 1) % 16 < 7
             sweep!(system, qmc, replica, walker1, 1, loop_number=bins, jumpReplica=false)
-        elseif (i - 1) % 256 == 127
+        elseif (i - 1) % 16 == 7
             sweep!(system, qmc, replica, walker1, 1, loop_number=bins, jumpReplica=true)
-        elseif 127 < (i - 1) % 256 < 255
+        elseif 7 < (i - 1) % 16 < 15
             sweep!(system, qmc, replica, walker2, 2, loop_number=bins, jumpReplica=false)
         else
             sweep!(system, qmc, replica, walker2, 2, loop_number=bins, jumpReplica=true)
