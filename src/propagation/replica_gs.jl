@@ -134,8 +134,8 @@ function update_cluster!_symmetric(
     Gτ = walker.G[1]
     Gτ0 = walker.Gτ0[1]
     G0τ = walker.G0τ[1]
-    gτ0 = walker.gτ0
-    g0τ = walker.g0τ
+    gτ0 = walker.gτ0_up
+    g0τ = walker.g0τ_up
 
     ws = walker.ws
     Bl = walker.Bl.B
@@ -205,8 +205,8 @@ function sweep!_symmetric(
     Gτ = walker.G[1]
     Gτ0 = walker.Gτ0[1]
     G0τ = walker.G0τ[1]
-    gτ0 = walker.gτ0
-    g0τ = walker.g0τ
+    gτ0 = walker.gτ0_up
+    g0τ = walker.g0τ_up
 
     Ul = walker.Ul_up
     Ur = walker.Ur_up
@@ -339,7 +339,7 @@ end
 function local_update!_asymmetric(
     σ::AbstractArray{Int}, j::Int, l::Int, ridx::Int,
     system::Hubbard, walker::HubbardWalker, replica::Replica;
-    direction::Int=1, forceSymmetry::Bool=false,
+    direction::Int=1,
     useHeatbath::Bool=true, saveRatio::Bool=true
 )
     α = walker.α # 2x2 matrix relating to auxiliary field and HS transform
@@ -386,12 +386,91 @@ function update_cluster!_asymmetric(
     system::Hubbard, qmc::QMC, cidx::Int, ridx::Int;
     direction::Int=1
 )
-    # TODO
-
     k = qmc.K_interval[cidx]
-    Θ = div(qmc.K, 2)
+    Θ = div(qmc.K, 2) # K is the number of time slices divided by 
 
-    
+    direction == 1 ? (
+        # propagate from τ to τ+k
+        Bk = system.Bk;
+        Bk⁻¹ = system.Bk⁻¹;
+        slice = collect(1:k);
+        Bc = walker.Bc.B[cidx-Θ]
+    ) :
+    (
+        # propagate from τ+k to τ
+        Bk = system.Bk⁻¹;
+        Bk⁻¹ = system.Bk;
+        slice = collect(k:-1:1);
+        Bc = walker.Bc.B[cidx]
+    )
+
+    Gτ_up = walker.G[1]
+    Gτ0_up = walker.Gτ0[1]
+    G0τ_up = walker.G0τ[1]
+    gτ0_up = walker.gτ0_up
+    g0τ_up = walker.g0τ_up
+
+    Gτ_dn = walker.G[2]
+    Gτ0_dn = walker.Gτ0[2]
+    G0τ_dn = walker.G0τ[2]
+    gτ0_dn = walker.gτ0_dn
+    g0τ_dn = walker.g0τ_dn
+
+    ws = walker.ws
+    Bl = walker.Bl.B
+
+    for i in slice
+        l = (cidx - 1) * qmc.stab_interval + i
+        @views σ = walker.auxfield[:, l]
+
+        # compute G <- Bk * G * Bk⁻¹ to enable fast update
+        system.useFirstOrderTrotter || begin
+            wrap_G!(Gτ_up, Bk, Bk⁻¹, ws)
+            wrap_G!(Gτ0_up, Bk, Bk⁻¹, ws)
+            wrap_G!(G0τ_up, Bk, Bk⁻¹, ws)
+
+            wrap_G!(Gτ_dn, Bk, Bk⁻¹, ws)
+            wrap_G!(Gτ0_dn, Bk, Bk⁻¹, ws)
+            wrap_G!(G0τ_dn, Bk, Bk⁻¹, ws)
+        end
+
+        for j in 1:system.V
+            local_update!_asymmetric(σ, j, l, ridx,
+                system, walker, replica,
+                direction=direction,
+                saveRatio=qmc.saveRatio,
+                useHeatbath=qmc.useHeatbath
+            )
+        end
+
+        # compute G <- Bk⁻¹ * G * Bk to restore the ordering
+        system.useFirstOrderTrotter || begin
+            wrap_G!(Gτ_up, Bk⁻¹, Bk, ws)
+            wrap_G!(Gτ0_up, Bk⁻¹, Bk, ws)
+            wrap_G!(G0τ_up, Bk⁻¹, Bk, ws)
+
+            wrap_G!(Gτ_dn, Bk⁻¹, Bk, ws)
+            wrap_G!(Gτ0_dn, Bk⁻¹, Bk, ws)
+            wrap_G!(G0τ_dn, Bk⁻¹, Bk, ws)
+        end
+
+        @views σ = walker.auxfield[:, l]
+        imagtime_propagator!(Bl[i], σ, system, tmpmat=ws.M)
+
+        ### proceed to next time slice ###
+        wrap_Gs!(Gτ_up, Gτ0_up, G0τ_up, Bl[i], ws, direction=direction)
+        wrap_Gs!(Gτ_dn, Gτ0_dn, G0τ_dn, Bl[i], ws, direction=direction)
+    end
+
+    @views prod_cluster!(Bc, Bl[k:-1:1], ws.M)
+
+    proceed_gτ0!(gτ0_up[cidx], Bc, Gτ_up, ws, direction=direction)
+    proceed_g0τ!(g0τ_up[cidx], Bc, Gτ_up, ws, direction=direction)
+
+    proceed_gτ0!(gτ0_dn[cidx], Bc, Gτ_dn, ws, direction=direction)
+    proceed_g0τ!(g0τ_dn[cidx], Bc, Gτ_dn, ws, direction=direction)
+
+    return nothing
 end
 
 function sweep!_asymmetric(

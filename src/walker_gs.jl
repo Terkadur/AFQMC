@@ -32,8 +32,10 @@ struct HubbardWalker{T<:Number,wf<:AbstractMatrix,Fact<:Factorization{T},E,C} <:
     # imaginary-time-displaced Green's
     Gτ0::Vector{Matrix{T}}
     G0τ::Vector{Matrix{T}}
-    gτ0::Vector{Matrix{T}}
-    g0τ::Vector{Matrix{T}}
+    gτ0_up::Vector{Matrix{T}}
+    g0τ_up::Vector{Matrix{T}}
+    gτ0_dn::Vector{Matrix{T}}
+    g0τ_dn::Vector{Matrix{T}}
 
     ### Temporal data to avoid memory allocations ###
     # a transient factorization
@@ -70,8 +72,10 @@ function HubbardWalker(
     G = [Matrix{T}(I, Ns, Ns) for _ in 1:2]
     Gτ0 = [Matrix{T}(I, Ns, Ns) for _ in 1:2]
     G0τ = [Matrix{T}(I, Ns, Ns) for _ in 1:2]
-    gτ0 = [Matrix{T}(I, Ns, Ns) for _ in 1:qmc.K]
-    g0τ = [Matrix{T}(I, Ns, Ns) for _ in 1:qmc.K]
+    gτ0_up = [Matrix{T}(I, Ns, Ns) for _ in 1:qmc.K]
+    g0τ_up = [Matrix{T}(I, Ns, Ns) for _ in 1:qmc.K]
+    gτ0_dn = [Matrix{T}(I, Ns, Ns) for _ in 1:qmc.K]
+    g0τ_dn = [Matrix{T}(I, Ns, Ns) for _ in 1:qmc.K]
 
     # build the initial propator with random configurations
     ws = ldr_workspace(G[1])
@@ -120,7 +124,7 @@ function HubbardWalker(
     return HubbardWalker{T,eltype(φ₀),eltype(Fl),eltype(ws.v),eltype(Bl.B)}(
         α, φ₀, φ₀T,
         auxfield, Fl, Fr, ws,
-        G, Ul_up, Ur_up, Ul_dn, Ur_dn, Gτ0, G0τ, gτ0, g0τ,
+        G, Ul_up, Ur_up, Ul_dn, Ur_dn, Gτ0, G0τ, gτ0_up, g0τ_up, gτ0_dn, g0τ_dn,
         Fτ, Fcl, Fcr, Bl, Bc,
         tmp_r
     )
