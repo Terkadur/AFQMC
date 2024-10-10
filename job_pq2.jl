@@ -2,7 +2,7 @@ include("./qmc_pq2.jl")
 
 const Lx, Ly = 4, 4
 const T = hopping_matrix_Hubbard_2d(Lx, Ly, 1.0)
-const U = -1.0
+const U = 1.0
 @show U
 
 const system = GenericHubbard(
@@ -29,7 +29,7 @@ const qmc = QMC(
     # stablization and update interval
     10, 10,
     # if force spin symmetry
-    forceSymmetry=true,
+    forceSymmetry=false,
     # debugging flag
     saveRatio=false
 )

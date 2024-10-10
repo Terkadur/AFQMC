@@ -2,7 +2,7 @@
 using JLD
 include("./averaging_utils.jl")
 
-U_list = [-1.0]
+U_list = [-1.0, 1.0]
 LA = 4
 
 Pmn2_avg = zeros(Float64, LA + 1, LA + 1, length(U_list))
