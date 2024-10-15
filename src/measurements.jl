@@ -45,16 +45,21 @@ end
 
 function measure_Pn2!(
     sampler::EtgSampler, replica::Replica;
-    Np::Int=size(replica.GA⁻¹_up, 2), forwardMeasurement::Bool=false
+    Np::Int=size(replica.GA⁻¹_up, 2), forwardMeasurement::Bool=false,
+    forceSymmetry::Bool=false
 )
-    # TODO
     s = sampler.s_counter[]
     Pn2₊ = sampler.Pn₊
     Pn2₋ = sampler.Pn₋
 
-    Pn2_estimator(replica, tmpPn=sampler.tmpPn)
+    Pn2_estimator(replica, spin=1, tmpPn=sampler.tmpPn)
     @views copyto!(Pn2₊[:, s], sampler.tmpPn[:, Np])
-    @views copyto!(Pn2₋[:, s], conj(sampler.tmpPn[:, Np]))
+    if forceSymmetry
+        @views copyto!(Pn2₋[:, s], conj(sampler.tmpPn[:, Np]))
+    else
+        Pn2_estimator(replica, spin=2, tmpPn=sampler.tmpPn)
+        @views copyto!(Pn2₋[:, s], sampler.tmpPn[:, Np])
+    end
 
     forwardMeasurement && (sampler.s_counter[] += 1)
 
@@ -156,12 +161,18 @@ end
 """
 function Pn2_estimator(
     replica::Replica;
+    spin::Int=1,
     L::Int=length(replica.Aidx),
-    tmpPn::AbstractMatrix{ComplexF64}=zeros(ComplexF64, L + 1, L)
+    tmpPn::AbstractMatrix{ComplexF64}=zeros(ComplexF64, L + 1, L),
 )
     Aidx = replica.Aidx
-    G₁ = replica.G₀1_up
-    G₂ = replica.G₀2_up
+    if spin == 1
+        G₁ = replica.G₀1_up
+        G₂ = replica.G₀2_up
+    elseif spin == 2
+        G₁ = replica.G₀1_dn
+        G₂ = replica.G₀2_dn
+    end
     ws = replica.ws
 
     U, d, V = compute_etgHam(G₁, G₂, Aidx, ws)

@@ -508,7 +508,7 @@ function sweep!_asymmetric(
     Fr_up = walker.Fr[1]
     Fl_dn = walker.Fl[2]
     Fr_dn = walker.Fr[2]
-    Fcl = walker.Fcl.B 
+    Fcl = walker.Fcl.B
     Fcr = walker.Fcr.B
 
     # imaginary-time-displaced Green's

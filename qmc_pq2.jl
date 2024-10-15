@@ -48,7 +48,7 @@ function run_regular_sampling_gs(
             sweep!(system, qmc, replica, walker2, 2, loop_number=bins, jumpReplica=true)
         end
 
-        measure_Pn2!(sampler, replica, forwardMeasurement=true)
+        measure_Pn2!(sampler, replica, forwardMeasurement=true, forceSymmetry=qmc.forceSymmetry)
 
         print(i)
         print("/")
@@ -60,6 +60,21 @@ function run_regular_sampling_gs(
         write(file, "Pn2_up", sampler.Pn₊)
         write(file, "Pn2_dn", sampler.Pn₋)
     end
+
+    sign1 = 0
+    for i in walker1.tmp_r
+        sign1 += sign(i)
+    end
+    sign1 /= length(walker1.tmp_r)
+    @show sign1
+
+    sign2 = 0
+    for i in walker2.tmp_r
+        sign2 += sign(i)
+    end
+    sign2 /= length(walker2.tmp_r)
+    @show sign2
+
 
     return nothing
 end

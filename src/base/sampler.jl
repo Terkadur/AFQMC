@@ -57,7 +57,7 @@ function EtgSampler(extsys::ExtendedSystem, qmc::QMC; nsamples=qmc.nsamples)
     p = zeros(qmc.nsamples)
 
     L = length(Aidx)
-    Nₐ = min(L, extsys.system.N[1]) # maximum possible number of particles
+    Nₐ = min(L, extsys.system.N[1]) # maximum possible number of particles TODO asymmetrize
     Pn₊ = zeros(ComplexF64, L+1, nsamples)
     Pn₋ = zeros(ComplexF64, L+1, nsamples)
     tmpPn = zeros(ComplexF64, L+1, Nₐ)

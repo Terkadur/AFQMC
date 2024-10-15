@@ -53,10 +53,10 @@ struct GenericHubbard{T, Tk} <: Hubbard
             # use symmetric Hubbard potential
             auxfield = [exp(γ), exp(-γ)]
         else
-            #γ = atanh(sqrt(tanh(Δτ * U / 4)))
-            #auxfield = [exp(2 * γ - Δτ * U / 2), exp(-2 * γ - Δτ * U / 2)]
-            γ = sys_type == ComplexF64 ? acosh(exp(Δτ * U / 2) + 0im) : acosh(exp(Δτ * U / 2))
-            auxfield = [exp(γ), exp(-γ)]
+            γ = sys_type == ComplexF64 ? atanh(sqrt(tanh(Δτ * U / 4))  + 0im) : atanh(sqrt(tanh(Δτ * U / 4)))
+            auxfield = [exp(2 * γ - Δτ * U / 2), exp(-2 * γ - Δτ * U / 2)]
+            # γ = sys_type == ComplexF64 ? acosh(exp(Δτ * U / 2) + 0im) : acosh(exp(Δτ * U / 2))
+            # auxfield = [exp(γ), exp(-γ)]
         end
 
         # add chemical potential

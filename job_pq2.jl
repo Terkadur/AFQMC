@@ -2,12 +2,12 @@ include("./qmc_pq2.jl")
 
 const Lx, Ly = 4, 4
 const T = hopping_matrix_Hubbard_2d(Lx, Ly, 1.0)
-const U = 1.0
+const U = 4.0
 @show U
 
 const system = GenericHubbard(
     # (Nx, Ny), (N_up, N_dn)
-    (Lx, Ly, 1), (8, 8),
+    (Lx, Ly, 1), (8, 12),
     # t, U
     T, U,
     # μ
@@ -25,13 +25,13 @@ const system = GenericHubbard(
 const qmc = QMC(
     system,
     # number of warm-ups, samples and measurement interval
-    32, 64, 6,
+    16, 32, 6,
     # stablization and update interval
     10, 10,
     # if force spin symmetry
     forceSymmetry=false,
     # debugging flag
-    saveRatio=false
+    saveRatio=true
 )
 
 seed = 1234
