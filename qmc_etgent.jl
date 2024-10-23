@@ -4,7 +4,7 @@ using .SwapQMC
 
 function run_incremental_sampling_gs(
     extsys::ExtendedSystem{Sys}, qmc::QMC, φ₀::Vector{Wf}, λₖ::Float64, Nₖ::Int,
-    path::String, filename::String, swap_period::Int=256
+    path::String, filename::String, swap_period::Int
 ) where {Sys<:Hubbard,Wf<:AbstractMatrix}
 
     system = extsys.system
@@ -21,14 +21,14 @@ function run_incremental_sampling_gs(
     # warm-up steps
     println("Warming up")
     for i in 1:qmc.nwarmups
-        if (i - 1) % swap_period < swap_period/2 - 1
+        if (i - 1) % swap_period < swap_period / 2 - 1
             sweep!(system, qmc, replica, walker1, 1, loop_number=1, jumpReplica=false)
-        elseif (i - 1) % swap_period == swap_period/2 - 1
+        elseif (i - 1) % swap_period == swap_period / 2 - 1
             print(i)
             print("/")
             println(qmc.nwarmups)
             sweep!(system, qmc, replica, walker1, 1, loop_number=1, jumpReplica=true)
-        elseif swap_period/2 - 1 < (i - 1) % swap_period < swap_period - 1
+        elseif swap_period / 2 - 1 < (i - 1) % swap_period < swap_period - 1
             sweep!(system, qmc, replica, walker2, 2, loop_number=1, jumpReplica=false)
         else
             print(i)
@@ -41,14 +41,14 @@ function run_incremental_sampling_gs(
     # measurements
     println("Measuring")
     for i in 1:qmc.nsamples
-        if (i - 1) % swap_period < swap_period/2 - 1
+        if (i - 1) % swap_period < swap_period / 2 - 1
             sweep!(system, qmc, replica, walker1, 1, loop_number=bins, jumpReplica=false)
-        elseif (i - 1) % swap_period == swap_period/2 - 1
+        elseif (i - 1) % swap_period == swap_period / 2 - 1
             print(i)
             print("/")
             println(qmc.nsamples)
             sweep!(system, qmc, replica, walker1, 1, loop_number=bins, jumpReplica=true)
-        elseif swap_period/2 - 1 < (i - 1) % swap_period < swap_period - 1
+        elseif swap_period / 2 - 1 < (i - 1) % swap_period < swap_period - 1
             sweep!(system, qmc, replica, walker2, 2, loop_number=bins, jumpReplica=false)
         else
             print(i)
