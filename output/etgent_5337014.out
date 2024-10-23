@@ -1,0 +1,12 @@
+## SLURM PROLOG ###############################################################
+##    Job ID : 5337014
+##  Job Name : etgent_N2_U-2
+##  Nodelist : node1638
+##      CPUs : 8
+##  Mem/Node : 2048 MB
+## Directory : /oscar/home/trazzaz/AFQMC
+##   Job Started : Wed Oct 23 03:12:41 AM EDT 2024
+###############################################################################
+U = -2.0
+seed = 1234
+λₖ = 0.0
