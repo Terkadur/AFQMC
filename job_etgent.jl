@@ -48,7 +48,7 @@ const φ₀ = [φ₀_up, φ₀_dn]
 const Aidx = [1]
 const extsys = ExtendedSystem(system, Aidx, subsysOrdering=false)
 
-path = "./data/"
+path = "./data/two_site/"
 
 swap_period = 256
 

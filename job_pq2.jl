@@ -46,8 +46,8 @@ seed = 1234
 Random.seed!(seed)
 
 swap_period = 256
- 
-path = "./data/"
+
+path = "./data/two_site/"
 
 filename = "Pq2_LA$(length(Aidx))_N$(sum(system.N))_U$(system.U)_beta$(system.β)_seed$(seed).jld"
 @time run_regular_sampling_gs(extsys, qmc, φ₀, path, filename, swap_period=swap_period)
