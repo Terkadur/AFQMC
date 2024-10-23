@@ -1,0 +1,26 @@
+## SLURM PROLOG ###############################################################
+##    Job ID : 5341847
+##  Job Name : pq2_N2_U8
+##  Nodelist : node1718
+##      CPUs : 8
+##  Mem/Node : 2048 MB
+## Directory : /oscar/home/trazzaz/AFQMC
+##   Job Started : Wed Oct 23 11:32:41 AM EDT 2024
+###############################################################################
+U = 8.0
+seed = 1234
+Warming up
+128/512
+256/512
+384/512
+512/512
+Measuring
+128/1024
+256/1024
+384/1024
+512/1024
+640/1024
+768/1024
+896/1024
+1024/1024
+ 21.055199 seconds (14.31 M allocations: 13.197 GiB, 3.99% gc time, 52.43% compilation time)
