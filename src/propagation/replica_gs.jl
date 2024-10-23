@@ -365,6 +365,7 @@ function local_update!_asymmetric(
         direction=direction
     )
     saveRatio && push!(walker.tmp_r, r)
+    # println(r)
     r = abs(r)
     # accept ratio
     u = useHeatbath ? real(r) / (1 + real(r)) : real(r)
@@ -538,11 +539,6 @@ function sweep!_asymmetric(
     G₀′_up = replica.G₀1_up;
     G₀_dn = replica.G₀2_dn;
     G₀′_dn = replica.G₀1_dn)
-
-    # TODO: READ BELOW
-    # in symmetric, half of walker.Bc.B is unused (identity matrices)
-    # all accept last two of walker.Fcl.B are used (L d R triplet)
-    # TODO: see where Fcl/Fcr changes (i think only first half ). Whenever using Bc.B just use the second half to spin down.
 
     # propagate from θ to 2θ
     direction == 1 && begin
