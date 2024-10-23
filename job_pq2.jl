@@ -2,7 +2,7 @@ include("./qmc_pq2.jl")
 
 const Lx, Ly = 2, 1
 const T = hopping_matrix_Hubbard_2d(Lx, Ly, 1.0)
-const U = 8.0
+const U = parse(Float64, ARGS[1])
 @show U
 
 const system = GenericHubbard(
