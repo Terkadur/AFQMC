@@ -1,0 +1,19 @@
+ERROR: LoadError: MethodError: no method matching seed!(::Float64)
+
+Closest candidates are:
+  seed!()
+   @ Random /oscar/rt/9.2/software/external/julia/1.9.3/share/julia/stdlib/v1.9/Random/src/RNGs.jl:363
+  seed!(!Matched::Union{TaskLocalRNG, Xoshiro})
+   @ Random /oscar/rt/9.2/software/external/julia/1.9.3/share/julia/stdlib/v1.9/Random/src/Xoshiro.jl:143
+  seed!(!Matched::Union{TaskLocalRNG, Xoshiro}, !Matched::Union{Vector{UInt32}, Vector{UInt64}})
+   @ Random /oscar/rt/9.2/software/external/julia/1.9.3/share/julia/stdlib/v1.9/Random/src/Xoshiro.jl:149
+  ...
+
+Stacktrace:
+ [1] top-level scope
+   @ /oscar/home/trazzaz/AFQMC/job_etgent.jl:42
+in expression starting at /oscar/home/trazzaz/AFQMC/job_etgent.jl:42
+
+real	0m10.602s
+user	0m8.533s
+sys	0m0.923s
