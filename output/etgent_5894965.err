@@ -1,0 +1,33 @@
+ERROR: LoadError: HDF5.API.H5Error: Error creating file ./data/2x2//EtgEnt_LA2_N4_U2.0_lambda0.0_beta50.0_seed1238.jld
+libhdf5 Stacktrace:
+ [1] H5FD__sec2_open: File accessibility/Unable to open file
+     unable to open file: name = './data/2x2//EtgEnt_LA2_N4_U2.0_lambda0.0_beta50.0_seed1238.jld', errno = 2, error message = 'No such file or directory', flags = 13, o_flags = 242
+  ⋮
+Stacktrace:
+  [1] macro expansion
+    @ ~/.julia/packages/HDF5/Z859u/src/api/error.jl:18 [inlined]
+  [2] h5f_create(pathname::String, flags::UInt16, fcpl_id::HDF5.FileCreateProperties, fapl_id::HDF5.FileAccessProperties)
+    @ HDF5.API ~/.julia/packages/HDF5/Z859u/src/api/functions.jl:1088
+  [3] jldopen(filename::String, rd::Bool, wr::Bool, cr::Bool, tr::Bool, ff::Bool; mmaparrays::Bool, compatible::Bool, compress::Bool)
+    @ JLD ~/.julia/packages/JLD/Vxkax/src/JLD.jl:182
+  [4] jldopen
+    @ ~/.julia/packages/JLD/Vxkax/src/JLD.jl:162 [inlined]
+  [5] jldopen(fname::String, mode::String; mmaparrays::Bool, compatible::Bool, compress::Bool)
+    @ JLD ~/.julia/packages/JLD/Vxkax/src/JLD.jl:250
+  [6] jldopen(fname::String, mode::String)
+    @ JLD ~/.julia/packages/JLD/Vxkax/src/JLD.jl:249
+  [7] jldopen(::var"#3#4"{EtgSampler{ComplexF64, Float64}}, ::String, ::Vararg{String}; kws::Base.Pairs{Symbol, Union{}, Tuple{}, NamedTuple{(), Tuple{}}})
+    @ JLD ~/.julia/packages/JLD/Vxkax/src/JLD.jl:260
+  [8] jldopen
+    @ ~/.julia/packages/JLD/Vxkax/src/JLD.jl:259 [inlined]
+  [9] run_incremental_sampling_gs(extsys::ExtendedSystem{GenericHubbard{ComplexF64, Matrix{Float64}}}, qmc::QMC, φ₀::Vector{Matrix{Float64}}, λₖ::Float64, Nₖ::Int64, path::String, filename::String, swap_period::Int64)
+    @ Main /oscar/home/trazzaz/AFQMC/qmc_etgent.jl:68
+ [10] macro expansion
+    @ ./timing.jl:273 [inlined]
+ [11] top-level scope
+    @ /oscar/home/trazzaz/AFQMC/job_etgent.jl:59
+in expression starting at /oscar/home/trazzaz/AFQMC/job_etgent.jl:55
+
+real	5m28.243s
+user	4m12.062s
+sys	1m9.534s
