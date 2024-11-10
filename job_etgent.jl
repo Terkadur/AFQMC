@@ -37,7 +37,7 @@ const qmc = QMC(
     saveRatio=false
 )
 
-seed = parse(Float64, ARGS[1])
+seed = parse(Int64, ARGS[1])
 @show seed
 Random.seed!(seed)
 
