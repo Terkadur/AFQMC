@@ -3,14 +3,14 @@ include("./qmc_etgent.jl")
 const Nₖ = 5
 const λₖ_list = collect(0.0:0.2:0.8)
 
-const Lx, Ly = 2, 1
+const Lx, Ly = 10, 1
 const T = hopping_matrix_Hubbard_2d(Lx, Ly, 1.0)
-const U = parse(Float64, ARGS[1])
+const U = 2.0 # parse(Float64, ARGS[1])
 @show U
 
 const system = GenericHubbard(
     # (Nx, Ny), (N_up, N_dn)
-    (Lx, Ly, 1), (1, 1),
+    (Lx, Ly, 1), (5, 5),
     # t, U
     T, U,
     # μ
@@ -45,10 +45,10 @@ const φ₀_up = trial_wf_free(system, 1, T)
 const φ₀_dn = trial_wf_free(system, 2, T)
 const φ₀ = [φ₀_up, φ₀_dn]
 
-const Aidx = [1]
+const Aidx = collect(1:parse(Int64, ARGS[1]))
 const extsys = ExtendedSystem(system, Aidx, subsysOrdering=false)
 
-path = "./data/two_site/"
+path = "./data/1x10/"
 
 swap_period = 256
 

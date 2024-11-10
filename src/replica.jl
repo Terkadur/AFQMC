@@ -3,7 +3,7 @@
 
 Defines a replica with the given parameters.
 """
-struct Replica{W, T, E}
+struct Replica{W,T,E}
     ### Partition indices ###
     Aidx::Vector{Int64}
 
@@ -17,7 +17,7 @@ struct Replica{W, T, E}
     G₀2_up::Matrix{T}
     G₀1_dn::Matrix{T}
     G₀2_dn::Matrix{T}
-    
+
     # Inverse of the Grover matrix
     GA⁻¹_up::Matrix{T}
     GA⁻¹_dn::Matrix{T}
@@ -42,9 +42,9 @@ struct Replica{W, T, E}
     λₖ::Float64
 
     ### LDR Workspace ###
-    ws::LDRWorkspace{T, E}
+    ws::LDRWorkspace{T,E}
 
-    function Replica(extsys::ExtendedSystem, w1::W, w2::W; λₖ::Float64 = 1.0) where W
+    function Replica(extsys::ExtendedSystem, w1::W, w2::W; λₖ::Float64=1.0) where {W}
         T = eltype(w1.G[1])
 
         LA = extsys.LA
@@ -61,12 +61,12 @@ struct Replica{W, T, E}
         Im2GA_up = I - 2 * G₀2_up[1:LA, 1:LA]
         Im2GA_dn = I - 2 * G₀2_dn[1:LA, 1:LA]
 
-        return new{W, T, Float64}(
-            Aidx, 
-            w1, w2, 
-            G₀1_up, G₀2_up, G₀1_dn, G₀2_dn,  
+        return new{W,T,Float64}(
+            Aidx,
+            w1, w2,
+            G₀1_up, G₀2_up, G₀1_dn, G₀2_dn,
             GA⁻¹_up, GA⁻¹_dn, Ref(logdetGA_up), Ref(sgnlogdetGA_up), Ref(logdetGA_dn), Ref(sgnlogdetGA_dn),
-            Im2GA_up, Im2GA_dn, a_up, b_up, t_up, a_dn, b_dn, t_dn, 
+            Im2GA_up, Im2GA_dn, a_up, b_up, t_up, a_dn, b_dn, t_dn,
             λₖ, ws
         )
     end

@@ -365,7 +365,6 @@ function local_update!_asymmetric(
         direction=direction
     )
     saveRatio && push!(walker.tmp_r, r)
-    # println(r)
     r = abs(r)
     # accept ratio
     u = useHeatbath ? real(r) / (1 + real(r)) : real(r)
