@@ -18,6 +18,7 @@ for (i, U) in enumerate(U_list)
 
     S2_avg[i] = S2.val
     S2_err[i] = S2.err
+    print("LA9: ")
     print(S2.val)
 end
 

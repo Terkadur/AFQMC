@@ -41,9 +41,8 @@ function run_regular_sampling_gs(
     # measurements
     println("Measuring")
     for i in 1:qmc.nsamples
-        deleteat!(walker1.tmp_r, findall(x -> true, walker1.tmp_r))
-        deleteat!(walker2.tmp_r, findall(x -> true, walker2.tmp_r))
-        average_sign(walker1, walker2)
+        # deleteat!(walker1.tmp_r, findall(x -> true, walker1.tmp_r))
+        # deleteat!(walker2.tmp_r, findall(x -> true, walker2.tmp_r))
         if (i - 1) % swap_period < swap_period / 2 - 1
             sweep!(system, qmc, replica, walker1, 1, loop_number=bins, jumpReplica=false)
         elseif (i - 1) % swap_period == swap_period / 2 - 1
@@ -62,17 +61,17 @@ function run_regular_sampling_gs(
 
         measure_Pn2!(sampler, replica, forwardMeasurement=true, forceSymmetry=qmc.forceSymmetry)
 
-        avg_sgn[i] = average_sign(walker1, walker2)
+        # avg_sgn[i] = average_sign(walker1, walker2)
     end
 
     # store the measurement
-    jldopen("$(path)/$(filename_pq)", "w") do file
-        write(file, "Pn2_up", sampler.Pn₊)
-        write(file, "Pn2_dn", sampler.Pn₋)
-    end
-    jldopen("$(path)/$(filename_sgn)", "w") do file
-        write(file, "Pn2_up", sampler.Pn₊)
-    end
+    # jldopen("$(path)/$(filename_pq)", "w") do file
+    #     write(file, "Pn2_up", sampler.Pn₊)
+    #     write(file, "Pn2_dn", sampler.Pn₋)
+    # end
+    # jldopen("$(path)/$(filename_sgn)", "w") do file
+    #     write(file, "Pn2_up", sampler.Pn₊)
+    # end
 
     return nothing
 end

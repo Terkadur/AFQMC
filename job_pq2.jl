@@ -1,19 +1,19 @@
 include("./qmc_pq2.jl")
 
-const Lx, Ly = 4, 4
+const Lx, Ly = 2, 2
 const T = hopping_matrix_Hubbard_2d(Lx, Ly, 1.0)
-const U = 8.0 # parse(Float64, ARGS[1])
+const U = 5.0 # parse(Float64, ARGS[1])
 @show U
 
 const system = GenericHubbard(
     # (Nx, Ny), (N_up, N_dn)
-    (Lx, Ly, 1), (12, 12),
+    (Lx, Ly, 1), (1, 1),
     # t, U
     T, U,
     # μ
     0.0,
     # β, L
-    18.0, 180,
+    18.0, 18000,
     # data type of the system
     sys_type=ComplexF64,
     # if use charge decomposition
@@ -25,20 +25,20 @@ const system = GenericHubbard(
 const qmc = QMC(
     system,
     # number of warm-ups, samples and measurement interval
-    0, 128, 6,
+    512, 1024, 10,
     # stablization and update interval
     10, 10,
     # if force spin symmetry
     forceSymmetry=false,
     # debugging flag
-    saveRatio=true
+    saveRatio=false
 )
 
 const φ₀_up = trial_wf_free(system, 1, T)
 const φ₀_dn = trial_wf_free(system, 2, T)
 const φ₀ = [φ₀_up, φ₀_dn]
 
-const Aidx = collect(1:8)
+const Aidx = [1]
 const extsys = ExtendedSystem(system, Aidx, subsysOrdering=false)
 
 seed = 1234
@@ -47,7 +47,7 @@ Random.seed!(seed)
 
 swap_period = 256
 
-path = "./data/two_site/"
+path = "./data/test/"
 
 filename_pq = "Pq2_LA$(length(Aidx))_N$(sum(system.N))_U$(system.U)_beta$(system.β)_seed$(seed).jld"
 filename_sgn = "Sgn_LA$(length(Aidx))_N$(sum(system.N))_U$(system.U)_beta$(system.β)_seed$(seed).jld"
