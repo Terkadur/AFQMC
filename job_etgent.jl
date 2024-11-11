@@ -10,7 +10,7 @@ const U = 2.0 # parse(Float64, ARGS[1])
 
 const system = GenericHubbard(
     # (Nx, Ny), (N_up, N_dn)
-    (Lx, Ly, 1), (2, 2),
+    (Lx, Ly, 1), (3, 3),
     # t, U
     T, U,
     # μ
