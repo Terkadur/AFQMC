@@ -10,7 +10,7 @@ const U = 2.0 # parse(Float64, ARGS[1])
 
 const system = GenericHubbard(
     # (Nx, Ny), (N_up, N_dn)
-    (Lx, Ly, 1), (1, 1),
+    (Lx, Ly, 1), (1, 2),
     # t, U
     T, U,
     # μ
@@ -55,6 +55,6 @@ swap_period = 256
 for λₖ in λₖ_list
     # 6617s (1h50m)
     @show λₖ
-    filename = "EtgEnt_LA$(length(Aidx))_N$(sum(system.N))_U$(system.U)_lambda$(λₖ)_beta$(system.β)_seed$(seed).jld"
+    filename = "EtgEnt_LA$(length(Aidx))_N$(system.N)_U$(system.U)_lambda$(λₖ)_beta$(system.β)_seed$(seed).jld"
     @time run_incremental_sampling_gs(extsys, qmc, φ₀, λₖ, Nₖ, path, filename, swap_period)
 end
