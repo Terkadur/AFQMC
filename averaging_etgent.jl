@@ -13,7 +13,7 @@ S2_conv = Vector{Float64}[]
 
 for (i, U) in enumerate(U_list)
     # merge data
-    filelist = [filter(x -> match(Regex("EtgEnt_LA2_N6_U$(U)_lambda$(lambda)_beta50.0_*"), x) !== nothing, readdir(path)) for lambda in lambda_list]
+    filelist = [filter(x -> match(Regex("EtgEnt_LA2_Nup1_Ndn3_U$(U)_lambda$(lambda)_beta50.0_*"), x) !== nothing, readdir(path)) for lambda in lambda_list]
     detgA_list = Vector{Float64}[]
     for filenames in filelist
         # raw data is saved in multiple files
@@ -32,7 +32,6 @@ for (i, U) in enumerate(U_list)
     S2_avg[i] = S2.val
     S2_err[i] = S2.err
 
-
     # convergence
     sweeps = length(detgA_list[1])
     for detgAs in detgA_list
@@ -45,7 +44,7 @@ for (i, U) in enumerate(U_list)
     push!(S2_conv, vec(-log.(prod(detgA_run, dims=1))))
 end
 
-jldopen("$(path)" * "processed/EtgEnt_LA2_N6_beta50.0.jld", "w") do file
+jldopen("$(path)" * "processed/EtgEnt_LA2_Nup1_Ndn3_beta50.0.jld", "w") do file
     write(file, "U", U_list)
     write(file, "S2_avg", S2_avg)
     write(file, "S2_err", S2_err)

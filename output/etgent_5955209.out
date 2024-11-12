@@ -1,9 +1,0 @@
-## SLURM PROLOG ###############################################################
-##    Job ID : 5955209
-##  Job Name : etgent_2x2_seed1253
-##  Nodelist : node1734
-##      CPUs : 8
-##  Mem/Node : 2048 MB
-## Directory : /oscar/home/trazzaz/AFQMC
-##   Job Started : Mon Nov 11 09:08:53 PM EST 2024
-###############################################################################

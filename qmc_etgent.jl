@@ -56,6 +56,7 @@ function run_incremental_sampling_gs(
             println(qmc.nsamples)
             sweep!(system, qmc, replica, walker2, 2, loop_number=bins, jumpReplica=true)
         end
+        println(replica.logdetGA_up[])
 
         sampler.p[i] = exp(-(replica.logdetGA_up[] + replica.logdetGA_dn[]) / Nₖ)
 
@@ -65,9 +66,9 @@ function run_incremental_sampling_gs(
     end
 
     # store the measurement
-    jldopen("$(path)/$(filename)", "w") do file
-        write(file, "detgA", sampler.p)
-    end
+    # jldopen("$(path)/$(filename)", "w") do file
+    #     write(file, "detgA", sampler.p)
+    # end
 
     return nothing
 end
