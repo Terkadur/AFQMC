@@ -1,0 +1,25 @@
+ERROR: LoadError: ArgumentError: Package JLD not found in current path.
+- Run `import Pkg; Pkg.add("JLD")` to install the JLD package.
+Stacktrace:
+ [1] macro expansion
+   @ ./loading.jl:2223 [inlined]
+ [2] macro expansion
+   @ ./lock.jl:273 [inlined]
+ [3] __require(into::Module, mod::Symbol)
+   @ Base ./loading.jl:2198
+ [4] #invoke_in_world#3
+   @ ./essentials.jl:1089 [inlined]
+ [5] invoke_in_world
+   @ ./essentials.jl:1086 [inlined]
+ [6] require(into::Module, mod::Symbol)
+   @ Base ./loading.jl:2191
+ [7] include(fname::String)
+   @ Main ./sysimg.jl:38
+ [8] top-level scope
+   @ /oscar/home/trazzaz/AFQMC/job_etgent.jl:1
+in expression starting at /oscar/home/trazzaz/AFQMC/qmc_etgent.jl:1
+in expression starting at /oscar/home/trazzaz/AFQMC/job_etgent.jl:1
+
+real	0m1.970s
+user	0m2.564s
+sys	0m0.140s
