@@ -12,10 +12,10 @@ Base.iterate(S::LDR, ::Val{:d}) = (S.d, Val(:R))
 Base.iterate(S::LDR, ::Val{:R}) = (S.R, Val(:done))
 Base.iterate(S::LDR, ::Val{:done}) = nothing
 
-Base.similar(S::LDR{T, E}) where {T, E} = ldr(S)
+Base.similar(S::LDR{T,E}) where {T,E} = ldr(S)
 
 # Diagonalization
-LinearAlgebra.eigvals(F::LDR{T, E}) where {T, E} = eigvals(Diagonal(F.d) * F.R * F.L, sortby = abs)
+LinearAlgebra.eigvals(F::LDR{T,E}) where {T,E} = eigvals(Diagonal(F.d) * F.R * F.L, sortby=abs)
 
 #############################################
 ##### Functions for non-square matrices #####
@@ -24,18 +24,18 @@ function rmul_qr!(Ur::AbstractMatrix, U::LDR{T,E}, V::AbstractMatrix) where {T,E
 
     mul!(Ur, U.R, V)
     lmul_D!(U.d, Ur)
-    Q,_ = qr!(Ur)
+    Q, _ = qr!(Ur)
     mul!(Ur, U.L, Matrix(Q))
 
     return Ur
 end
 
 function lmul_qr!(Ul::AbstractMatrix, U::AbstractMatrix, V::LDR{T,E}) where {T,E}
-    
+
     mul!(Ul, U, V.L)
     rmul_D!(Ul, V.d)
-    _,R = qr!(Ul)
-    for i in axes(R,2)
+    _, R = qr!(Ul)
+    for i in axes(R, 2)
         @views R[:, i] ./= norm(R[:, i])
     end
     mul!(Ul, R, V.R)
@@ -87,7 +87,7 @@ function det_UpV(U::LDR{T,E}, V::LDR{T,E}, ws::LDRWorkspace{T,E}) where {T,E}
 
     # calculate sign(det(Dᵥ₊)) and log(|det(Dᵥ₊)|)
     logdetDᵤ₊, sgndetDᵤ₊ = Slinalg.det_D(dᵤ₊)
-    
+
     # calcualte Dᵤ₊⁻¹⋅Lᵤᵀ
     adjoint!(ws.M, Lᵤ)
     Slinalg.ldiv_D!(dᵤ₊, ws.M)
@@ -96,7 +96,7 @@ function det_UpV(U::LDR{T,E}, V::LDR{T,E}, ws::LDRWorkspace{T,E}) where {T,E}
     # calculate Dᵤ₋ = min(Dᵤ, 1)
     dᵤ₋ = ws.v
     @. dᵤ₋ = min(dᵤ, 1)
-    
+
     # calculate Dᵤ₋⋅Rᵤ⋅Rᵥ⁻¹⋅Dᵥ₊⁻¹
     mul!(ws.M″, Rᵤ, Rᵥ⁻¹Dᵥ₊⁻¹)      # Rᵤ⋅Rᵥ⁻¹⋅Dᵥ₊⁻¹
     Slinalg.lmul_D!(dᵤ₋, ws.M″)     # Dᵤ₋⋅[Rᵤ⋅Rᵥ⁻¹⋅Dᵥ₊]
@@ -126,41 +126,42 @@ end
 
     Stable calculation of A⁻¹ - I via SVD
 """
-function invAmI!(A::AbstractMatrix{T}) where T
+function invAmI!(A::AbstractMatrix{T}) where {T}
     # SVD with QR iteration for better accuracy
-    A_svd = svd!(A, alg = LinearAlgebra.QRIteration())
+    A_svd = svd!(A, alg=LinearAlgebra.QRIteration())
     U, d, V = A_svd
     Uᵀ, Vᵀ = U', V'
-
     # calculate VᵀU
     VᵀU = Vᵀ * U
 
     # calculate VᵀU <- d⁻¹ - VᵀU
     @. VᵀU *= -1
     @inbounds for i in eachindex(d)
-        VᵀU[i, i] += 1/d[i]
+        VᵀU[i, i] += 1 / d[i]
     end
 
     return V, VᵀU, Uᵀ
 end
 
-function compute_etgHam(GA::AbstractMatrix{T}) where T
+function compute_etgHam(GA::AbstractMatrix{T}) where {T}
     # compute GA⁻¹ - I
     U, D, V = invAmI!(GA)
-    F = svd!(D, alg = LinearAlgebra.QRIteration())
+    F = svd!(D, alg=LinearAlgebra.QRIteration())
 
-    return U*F.U, F.S, F.Vt*V
+    return U * F.U, F.S, F.Vt * V
 end
 
 function compute_etgHam(
-    G₁::AbstractMatrix{T}, G₂::AbstractMatrix{T}, 
+    G₁::AbstractMatrix{T}, G₂::AbstractMatrix{T},
     Aidx::Vector{Int}, ws::LDRWorkspace{T,E}
 ) where {T,E}
 
     # compute GA₁⁻¹ - I
     GA₁ = ws.M
     @views copyto!(GA₁, G₁[Aidx, Aidx])
+    # @show GA₁
     U₁, d₁, V₁ = invAmI!(GA₁)
+    # @show d₁
     # compute GA₂⁻¹ - I
     GA₂ = ws.M
     @views copyto!(GA₂, G₂[Aidx, Aidx])
@@ -173,9 +174,9 @@ function compute_etgHam(
     mul!(V₂U₁d₁, V₂, ws.M)
     d₂V₂U₁d₁ = ws.M
     mul!(d₂V₂U₁d₁, d₂, V₂U₁d₁)
-    F = svd!(d₂V₂U₁d₁, alg = LinearAlgebra.QRIteration())
+    F = svd!(d₂V₂U₁d₁, alg=LinearAlgebra.QRIteration())
 
-    return U₂*F.U, F.S, F.Vt*V₁
+    return U₂ * F.U, F.S, F.Vt * V₁
 end
 
 """
@@ -217,25 +218,27 @@ function ImA!(G::LDR{T,E}, A::LDR{T,E}, ws::LDRWorkspace{T,E}) where {T,E}
     return nothing
 end
 
-compute_HA!(HA::LDR{T,E}, ImGA::LDR{T,E}, ws::LDRWorkspace{T,E}) where {T, E} = rdiv!(HA, ImGA, ws)
+compute_HA!(HA::LDR{T,E}, ImGA::LDR{T,E}, ws::LDRWorkspace{T,E}) where {T,E} = rdiv!(HA, ImGA, ws)
 
-merge_HA!(HA::LDR{T,E}, HA′::LDR{T,E}, ws::LDRWorkspace{T,E})  where {T, E} = rmul!(HA, HA′, ws)
+merge_HA!(HA::LDR{T,E}, HA′::LDR{T,E}, ws::LDRWorkspace{T,E}) where {T,E} = rmul!(HA, HA′, ws)
 
 ################################################
 ##### Matrix Operations for Swap Algorithm #####
 ################################################
 
-reset!(U::AbstractMatrix) = let
-    @. U = 0.0
-end
+reset!(U::AbstractMatrix) =
+    let
+        @. U = 0.0
+    end
 
-reset!(U::LDR{T,E}) where {T, E} = let
-    @. U.L = 0.0
-    @. U.d = 1.0
-    @. U.R = 0.0
-end
+reset!(U::LDR{T,E}) where {T,E} =
+    let
+        @. U.L = 0.0
+        @. U.d = 1.0
+        @. U.R = 0.0
+    end
 
-function expand!(U::AbstractMatrix{T}, V::AbstractMatrix{T}, LA::Int, LB::Int, ridx::Int) where T
+function expand!(U::AbstractMatrix{T}, V::AbstractMatrix{T}, LA::Int, LB::Int, ridx::Int) where {T}
     """
         expand!(U, V, LA, LB, ridx)
 
@@ -264,7 +267,7 @@ function expand!(U::AbstractMatrix{T}, V::AbstractMatrix{T}, LA::Int, LB::Int, r
 end
 
 function expand!(
-    U::AbstractVector{T}, V::AbstractVector{T}, 
+    U::AbstractVector{T}, V::AbstractVector{T},
     LA::Int, LB::Int, ridx::Int
 ) where {T<:AbstractMatrix}
     length(U) == length(V) || @error "Two vectors of matrix must have same length"
@@ -276,7 +279,7 @@ function expand!(
     return nothing
 end
 
-function expand!(U::LDR{T,E}, V::LDR{T,E}, ridx::Int) where {T, E}
+function expand!(U::LDR{T,E}, V::LDR{T,E}, ridx::Int) where {T,E}
     Lᵤ = U.L
     dᵤ = U.d
     Rᵤ = U.R
@@ -304,19 +307,19 @@ function expand!(U::LDR{T,E}, V::LDR{T,E}, ridx::Int) where {T, E}
     # fill L
     @views copyto!(Lᵤ[1:idx, 1:lᵥ], Lᵥ[1:idx, 1:lᵥ])
     @views copyto!(Lᵤ[1:idx, lᵥ+1+δL:Lu], Lᵥ[1:idx, lᵥ+1:Lv])
-    idx == Lv || (@views copyto!(Lᵤ[idx+δL+1:Lu, 1:lᵥ], Lᵥ[idx+1:Lv, 1:lᵥ]); 
-                  @views copyto!(Lᵤ[idx+δL+1:Lu, lᵥ+1+δL:Lu], Lᵥ[idx+1:Lv, lᵥ+1:Lv])
-                )
-    Lᵤ_sub = @view Lᵤ[idx+1 : idx+δL, lᵥ+1 : lᵥ+δL]
+    idx == Lv || (@views copyto!(Lᵤ[idx+δL+1:Lu, 1:lᵥ], Lᵥ[idx+1:Lv, 1:lᵥ]);
+    @views copyto!(Lᵤ[idx+δL+1:Lu, lᵥ+1+δL:Lu], Lᵥ[idx+1:Lv, lᵥ+1:Lv])
+    )
+    Lᵤ_sub = @view Lᵤ[idx+1:idx+δL, lᵥ+1:lᵥ+δL]
     Lᵤ_sub[diagind(Lᵤ_sub)] .= 1
 
     # fill R
     @views copyto!(Rᵤ[1:lᵥ, 1:idx], Rᵥ[1:lᵥ, 1:idx])
     @views copyto!(Rᵤ[lᵥ+1+δL:Lu, 1:idx], Rᵥ[lᵥ+1:Lv, 1:idx])
-    idx == Lv || (@views copyto!(Rᵤ[1:lᵥ, idx+δL+1:Lu], Rᵥ[1:lᵥ, idx+1:Lv]); 
-                  @views copyto!(Rᵤ[lᵥ+1+δL:Lu, idx+δL+1:Lu], Rᵥ[lᵥ+1:Lv, idx+1:Lv])
-                )
-    Rᵤ_sub = @view Rᵤ[lᵥ+1 : lᵥ+δL, idx+1 : idx+δL]
+    idx == Lv || (@views copyto!(Rᵤ[1:lᵥ, idx+δL+1:Lu], Rᵥ[1:lᵥ, idx+1:Lv]);
+    @views copyto!(Rᵤ[lᵥ+1+δL:Lu, idx+δL+1:Lu], Rᵥ[lᵥ+1:Lv, idx+1:Lv])
+    )
+    Rᵤ_sub = @view Rᵤ[lᵥ+1:lᵥ+δL, idx+1:idx+δL]
     Rᵤ_sub[diagind(Rᵤ_sub)] .= 1
 
     return nothing
@@ -338,9 +341,9 @@ end
 
 function inv_Grover!(
     GA⁻¹::AbstractMatrix{T},
-    GA₁::AbstractMatrix{T}, GA₂::AbstractMatrix{T}, 
-    ws::LDRWorkspace{T, E}
-) where {T, E}
+    GA₁::AbstractMatrix{T}, GA₂::AbstractMatrix{T},
+    ws::LDRWorkspace{T,E}
+) where {T,E}
     """
         inv_Grover!(GA⁻¹, GA₁, GA₂, ws)
 

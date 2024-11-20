@@ -52,13 +52,13 @@ function measure_Pn2!(
     Pn2₊ = sampler.Pn₊
     Pn2₋ = sampler.Pn₋
 
-    Pn2_estimator(replica, spin=1, tmpPn=sampler.tmpPn)
-    @views copyto!(Pn2₊[:, s], sampler.tmpPn[:, Np])
+    Pn2_estimator(replica, spin=1, tmpPn=sampler.tmpPn_up)
+    @views copyto!(Pn2₊[:, s], sampler.tmpPn_up[:, end])
     if forceSymmetry
-        @views copyto!(Pn2₋[:, s], conj(sampler.tmpPn[:, Np]))
+        @views copyto!(Pn2₋[:, s], conj(sampler.tmpPn_up[:, end]))
     else
-        Pn2_estimator(replica, spin=2, tmpPn=sampler.tmpPn)
-        @views copyto!(Pn2₋[:, s], sampler.tmpPn[:, Np])
+        Pn2_estimator(replica, spin=2, tmpPn=sampler.tmpPn_dn)
+        @views copyto!(Pn2₋[:, s], sampler.tmpPn_dn[:, end])
     end
 
     forwardMeasurement && (sampler.s_counter[] += 1)

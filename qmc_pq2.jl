@@ -16,7 +16,7 @@ function run_regular_sampling_gs(
     bins = qmc.measure_interval
 
     sampler = EtgSampler(extsys, qmc)
-    avg_sgn = zeros(Float64, qmc.nsamples)
+    sgn = zeros(Float64, qmc.nsamples)
 
     # warm-up steps
     println("Warming up")
@@ -41,53 +41,50 @@ function run_regular_sampling_gs(
     # measurements
     println("Measuring")
     for i in 1:qmc.nsamples
-        # deleteat!(walker1.tmp_r, findall(x -> true, walker1.tmp_r))
-        # deleteat!(walker2.tmp_r, findall(x -> true, walker2.tmp_r))
         if (i - 1) % swap_period < swap_period / 2 - 1
+            deleteat!(walker1.tmp_r, findall(x -> true, walker1.tmp_r))
             sweep!(system, qmc, replica, walker1, 1, loop_number=bins, jumpReplica=false)
+            sgn[i] = average_sign(walker1)
         elseif (i - 1) % swap_period == swap_period / 2 - 1
             print(i)
             print("/")
             println(qmc.nsamples)
+            deleteat!(walker1.tmp_r, findall(x -> true, walker1.tmp_r))
             sweep!(system, qmc, replica, walker1, 1, loop_number=bins, jumpReplica=true)
+            sgn[i] = average_sign(walker1)
         elseif swap_period / 2 - 1 < (i - 1) % swap_period < swap_period - 1
+            deleteat!(walker2.tmp_r, findall(x -> true, walker2.tmp_r))
             sweep!(system, qmc, replica, walker2, 2, loop_number=bins, jumpReplica=false)
+            sgn[i] = average_sign(walker2)
         else
             print(i)
             print("/")
             println(qmc.nsamples)
+            deleteat!(walker2.tmp_r, findall(x -> true, walker2.tmp_r))
             sweep!(system, qmc, replica, walker2, 2, loop_number=bins, jumpReplica=true)
+            sgn[i] = average_sign(walker2)
         end
 
         measure_Pn2!(sampler, replica, forwardMeasurement=true, forceSymmetry=qmc.forceSymmetry)
-
-        # avg_sgn[i] = average_sign(walker1, walker2)
     end
 
     # store the measurement
-    # jldopen("$(path)/$(filename_pq)", "w") do file
-    #     write(file, "Pn2_up", sampler.Pn₊)
-    #     write(file, "Pn2_dn", sampler.Pn₋)
-    # end
-    # jldopen("$(path)/$(filename_sgn)", "w") do file
-    #     write(file, "Pn2_up", sampler.Pn₊)
-    # end
+    jldopen("$(path)/$(filename_pq)", "w") do file
+        write(file, "Pn2_up", sampler.Pn₊)
+        write(file, "Pn2_dn", sampler.Pn₋)
+    end
+    jldopen("$(path)/$(filename_sgn)", "w") do file
+        write(file, "Sgn", sgn)
+    end
 
     return nothing
 end
 
-function average_sign(walker1::HubbardWalker, walker2::HubbardWalker)
-    if length(walker1.tmp_r) + length(walker2.tmp_r) == 0
-        return 0
-    end
-
+function average_sign(walker::HubbardWalker)
     avg_sign = 0
-    for i in walker1.tmp_r
+    for i in walker.tmp_r
         avg_sign += sign(i)
     end
-    for i in walker2.tmp_r
-        avg_sign += sign(i)
-    end
-    avg_sign /= length(walker1.tmp_r) + length(walker2.tmp_r)
+    avg_sign /= length(walker.tmp_r)
     return avg_sign
 end
