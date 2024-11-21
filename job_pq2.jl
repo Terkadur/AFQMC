@@ -4,7 +4,7 @@ seed = 1234
 @show seed
 Random.seed!(seed)
 
-const Lx, Ly = 2, 2
+const Lx, Ly = 3, 3
 const T = hopping_matrix_Hubbard_2d(Lx, Ly, 1.0)
 const U = 2.0
 @show U
@@ -44,12 +44,12 @@ const φ₀_up = trial_wf_free(system, 1, T)
 const φ₀_dn = trial_wf_free(system, 2, T)
 const φ₀ = [φ₀_up, φ₀_dn]
 
-const Aidx = collect(1:2)
+const Aidx = collect(1:3)
 const extsys = ExtendedSystem(system, Aidx, subsysOrdering=false)
 
 swap_period = 256
 
-path = "./data/2x2/"
+path = "./data/3x3/"
 
 filename_pq = "pq2/Pq2_LA$(length(Aidx))_Nup$(system.N[1])_Ndn$(system.N[2])_U$(system.U)_beta$(system.β)_seed$(seed).jld"
 filename_sgn = "sgn/Sgn_LA$(length(Aidx))_Nup$(system.N[1])_Ndn$(system.N[2])_U$(system.U)_beta$(system.β)_seed$(seed).jld"

@@ -1,0 +1,17 @@
+## SLURM PROLOG ###############################################################
+##    Job ID : 6545402
+##  Job Name : sbatch_pq2.sh
+##  Nodelist : node1320
+##      CPUs : 8
+##  Mem/Node : 2048 MB
+## Directory : /oscar/home/trazzaz/AFQMC
+##   Job Started : Thu Nov 21 01:59:04 AM EST 2024
+###############################################################################
+seed = 1234
+U = 2.0
+Warming up
+128/512
+256/512
+384/512
+512/512
+Measuring
