@@ -22,7 +22,7 @@ const system = GenericHubbard(
     # μ
     0.0,
     # β, L
-    50.0, 500,
+    45.0, 450,
     # data type of the system
     sys_type=ComplexF64,
     # if use charge decomposition
