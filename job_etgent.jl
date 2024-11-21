@@ -34,7 +34,7 @@ const system = GenericHubbard(
 const qmc = QMC(
     system,
     # number of warm-ups, samples and measurement interval
-    512, 1024, 10,
+    512, 8192, 10,
     # stablization and update interval
     10, 10,
     # if force spin symmetry

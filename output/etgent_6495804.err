@@ -1,0 +1,33 @@
+ERROR: LoadError: LAPACKException(7)
+Stacktrace:
+  [1] chklapackerror_positive(::Int64)
+    @ LinearAlgebra.LAPACK /oscar/rt/9.2/software/external/julia/1.11.1/share/julia/stdlib/v1.11/LinearAlgebra/src/lapack.jl:44
+  [2] chklapackerror
+    @ /oscar/rt/9.2/software/external/julia/1.11.1/share/julia/stdlib/v1.11/LinearAlgebra/src/lapack.jl:40 [inlined]
+  [3] gesvd!(jobu::Char, jobvt::Char, A::Matrix{ComplexF64})
+    @ LinearAlgebra.LAPACK /oscar/rt/9.2/software/external/julia/1.11.1/share/julia/stdlib/v1.11/LinearAlgebra/src/lapack.jl:1786
+  [4] _svd!
+    @ /oscar/rt/9.2/software/external/julia/1.11.1/share/julia/stdlib/v1.11/LinearAlgebra/src/svd.jl:129 [inlined]
+  [5] svd!(A::Matrix{ComplexF64}; full::Bool, alg::LinearAlgebra.QRIteration)
+    @ LinearAlgebra /oscar/rt/9.2/software/external/julia/1.11.1/share/julia/stdlib/v1.11/LinearAlgebra/src/svd.jl:105
+  [6] svd!
+    @ /oscar/rt/9.2/software/external/julia/1.11.1/share/julia/stdlib/v1.11/LinearAlgebra/src/svd.jl:100 [inlined]
+  [7] rmul!_svd
+    @ /oscar/home/trazzaz/AFQMC/src/base/linalg_SVD.jl:41 [inlined]
+  [8] compute_G!(G::Matrix{ComplexF64}, φ₀::Matrix{Float64}, φ₀ᵀ::Matrix{Float64}, Ul::Matrix{ComplexF64}, Ur::Matrix{ComplexF64}, Bl::LDR{ComplexF64, Float64}, Br::LDR{ComplexF64, Float64})
+    @ Main.SwapQMC /oscar/home/trazzaz/AFQMC/src/operations_gs.jl:13
+  [9] sweep!_asymmetric(system::GenericHubbard{ComplexF64, Matrix{Float64}}, qmc::QMC, replica::Replica{HubbardWalker{ComplexF64, Matrix{Float64}, LDR{ComplexF64, Float64}, Float64, Matrix{ComplexF64}}, ComplexF64, Float64}, walker::HubbardWalker{ComplexF64, Matrix{Float64}, LDR{ComplexF64, Float64}, Float64, Matrix{ComplexF64}}, ridx::Int64, slice::Vector{Int64})
+    @ Main.SwapQMC /oscar/home/trazzaz/AFQMC/src/propagation/replica_gs.jl:557
+ [10] sweep!(system::GenericHubbard{ComplexF64, Matrix{Float64}}, qmc::QMC, replica::Replica{HubbardWalker{ComplexF64, Matrix{Float64}, LDR{ComplexF64, Float64}, Float64, Matrix{ComplexF64}}, ComplexF64, Float64}, walker::HubbardWalker{ComplexF64, Matrix{Float64}, LDR{ComplexF64, Float64}, Float64, Matrix{ComplexF64}}, ridx::Int64; loop_number::Int64, jumpReplica::Bool)
+    @ Main.SwapQMC /oscar/home/trazzaz/AFQMC/src/propagation/replica_gs.jl:61
+ [11] run_incremental_sampling_gs(extsys::ExtendedSystem{GenericHubbard{ComplexF64, Matrix{Float64}}}, qmc::QMC, φ₀::Vector{Matrix{Float64}}, λₖ::Float64, Nₖ::Int64, path::String, filename::String, swap_period::Int64)
+    @ Main /oscar/home/trazzaz/AFQMC/qmc_etgent.jl:26
+ [12] macro expansion
+    @ ./timing.jl:581 [inlined]
+ [13] top-level scope
+    @ /oscar/home/trazzaz/AFQMC/job_etgent.jl:62
+in expression starting at /oscar/home/trazzaz/AFQMC/job_etgent.jl:58
+
+real	0m34.033s
+user	0m26.419s
+sys	0m0.623s

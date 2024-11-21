@@ -51,6 +51,6 @@ swap_period = 256
 
 path = "./data/2x2/"
 
-filename_pq = "pq2/Pq2_LA$(length(Aidx))_N$(sum(system.N))_U$(system.U)_beta$(system.β)_seed$(seed).jld"
-filename_sgn = "sgn/Sgn_LA$(length(Aidx))_N$(sum(system.N))_U$(system.U)_beta$(system.β)_seed$(seed).jld"
+filename_pq = "pq2/Pq2_LA$(length(Aidx))_Nup$(system.N[1])_Ndn$(system.N[2])_U$(system.U)_beta$(system.β)_seed$(seed).jld"
+filename_sgn = "sgn/Sgn_LA$(length(Aidx))_Nup$(system.N[1])_Ndn$(system.N[2])_U$(system.U)_beta$(system.β)_seed$(seed).jld"
 @time run_regular_sampling_gs(extsys, qmc, φ₀, path, filename_pq, filename_sgn, swap_period)

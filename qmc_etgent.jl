@@ -21,7 +21,6 @@ function run_incremental_sampling_gs(
     # warm-up steps
     println("Warming up")
     for i in 1:qmc.nwarmups
-        print(i)
         if (i - 1) % swap_period < swap_period / 2 - 1
             sweep!(system, qmc, replica, walker1, 1, loop_number=1, jumpReplica=false)
         elseif (i - 1) % swap_period == swap_period / 2 - 1
