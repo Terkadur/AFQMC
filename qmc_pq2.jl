@@ -40,32 +40,54 @@ function run_regular_sampling_gs(
 
     # measurements
     println("Measuring")
-    for i in 1:qmc.nsamples
-        if (i - 1) % swap_period < swap_period / 2 - 1
-            deleteat!(walker1.tmp_r, findall(x -> true, walker1.tmp_r))
-            sweep!(system, qmc, replica, walker1, 1, loop_number=bins, jumpReplica=false)
-            sgn[i] = average_sign(walker1)
-        elseif (i - 1) % swap_period == swap_period / 2 - 1
-            print(i)
-            print("/")
-            println(qmc.nsamples)
-            deleteat!(walker1.tmp_r, findall(x -> true, walker1.tmp_r))
-            sweep!(system, qmc, replica, walker1, 1, loop_number=bins, jumpReplica=true)
-            sgn[i] = average_sign(walker1)
-        elseif swap_period / 2 - 1 < (i - 1) % swap_period < swap_period - 1
-            deleteat!(walker2.tmp_r, findall(x -> true, walker2.tmp_r))
-            sweep!(system, qmc, replica, walker2, 2, loop_number=bins, jumpReplica=false)
-            sgn[i] = average_sign(walker2)
-        else
-            print(i)
-            print("/")
-            println(qmc.nsamples)
-            deleteat!(walker2.tmp_r, findall(x -> true, walker2.tmp_r))
-            sweep!(system, qmc, replica, walker2, 2, loop_number=bins, jumpReplica=true)
-            sgn[i] = average_sign(walker2)
-        end
+    if qmc.saveRatio
+        for i in 1:qmc.nsamples
+            if (i - 1) % swap_period < swap_period / 2 - 1
+                deleteat!(walker1.tmp_r, findall(x -> true, walker1.tmp_r))
+                sweep!(system, qmc, replica, walker1, 1, loop_number=bins, jumpReplica=false)
+                sgn[i] = average_sign(walker1)
+            elseif (i - 1) % swap_period == swap_period / 2 - 1
+                print(i)
+                print("/")
+                println(qmc.nsamples)
+                deleteat!(walker1.tmp_r, findall(x -> true, walker1.tmp_r))
+                sweep!(system, qmc, replica, walker1, 1, loop_number=bins, jumpReplica=true)
+                sgn[i] = average_sign(walker1)
+            elseif swap_period / 2 - 1 < (i - 1) % swap_period < swap_period - 1
+                deleteat!(walker2.tmp_r, findall(x -> true, walker2.tmp_r))
+                sweep!(system, qmc, replica, walker2, 2, loop_number=bins, jumpReplica=false)
+                sgn[i] = average_sign(walker2)
+            else
+                print(i)
+                print("/")
+                println(qmc.nsamples)
+                deleteat!(walker2.tmp_r, findall(x -> true, walker2.tmp_r))
+                sweep!(system, qmc, replica, walker2, 2, loop_number=bins, jumpReplica=true)
+                sgn[i] = average_sign(walker2)
+            end
 
-        measure_Pn2!(sampler, replica, forwardMeasurement=true, forceSymmetry=qmc.forceSymmetry)
+            measure_Pn2!(sampler, replica, forwardMeasurement=true, forceSymmetry=qmc.forceSymmetry)
+        end
+    else
+        for i in 1:qmc.nsamples
+            if (i - 1) % swap_period < swap_period / 2 - 1
+                sweep!(system, qmc, replica, walker1, 1, loop_number=bins, jumpReplica=false)
+            elseif (i - 1) % swap_period == swap_period / 2 - 1
+                print(i)
+                print("/")
+                println(qmc.nsamples)
+                sweep!(system, qmc, replica, walker1, 1, loop_number=bins, jumpReplica=true)
+            elseif swap_period / 2 - 1 < (i - 1) % swap_period < swap_period - 1
+                sweep!(system, qmc, replica, walker2, 2, loop_number=bins, jumpReplica=false)
+            else
+                print(i)
+                print("/")
+                println(qmc.nsamples)
+                sweep!(system, qmc, replica, walker2, 2, loop_number=bins, jumpReplica=true)
+            end
+
+            measure_Pn2!(sampler, replica, forwardMeasurement=true, forceSymmetry=qmc.forceSymmetry)
+        end
     end
 
     # store the measurement
@@ -73,8 +95,10 @@ function run_regular_sampling_gs(
         write(file, "Pn2_up", sampler.Pn₊)
         write(file, "Pn2_dn", sampler.Pn₋)
     end
-    jldopen("$(path)/$(filename_sgn)", "w") do file
-        write(file, "Sgn", sgn)
+    if qmc.saveRatio
+        jldopen("$(path)/$(filename_sgn)", "w") do file
+            write(file, "Sgn", sgn)
+        end
     end
 
     return nothing

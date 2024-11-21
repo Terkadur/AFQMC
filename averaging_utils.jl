@@ -63,7 +63,7 @@ function get_probs_raw(data::Dict)
         @views sum_diag!(Pm2_raw[:, i], Pmn2_raw[:, :, i])
     end
 
-    return Pmn2_raw, Pn2_raw, Pm2_raw
+    return Pmn2_raw, reverse(Pn2_raw; dims=1), Pm2_raw
 end
 
 function get_probs_stats(Pmn2_raw::AbstractArray, Pn2_raw::AbstractArray, Pm2_raw::AbstractArray)

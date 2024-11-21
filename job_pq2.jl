@@ -19,7 +19,7 @@ const system = GenericHubbard(
     # μ
     0.0,
     # β, L
-    18.0, 180,
+    5.0, 50,
     # data type of the system
     sys_type=ComplexF64,
     # if use charge decomposition
@@ -37,7 +37,7 @@ const qmc = QMC(
     # if force spin symmetry
     forceSymmetry=false,
     # debugging flag
-    saveRatio=true
+    saveRatio=false
 )
 
 const φ₀_up = trial_wf_free(system, 1, T)
