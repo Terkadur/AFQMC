@@ -61,6 +61,13 @@ function measure_Pn2!(
         @views copyto!(Pn2₋[:, s], sampler.tmpPn_dn[:, end])
     end
 
+    if iszero(sampler.tmpPn_up[:, end])
+        println("zero up")
+    end
+    if iszero(sampler.tmpPn_dn[:, end])
+        println("zero dn")
+    end
+
     forwardMeasurement && (sampler.s_counter[] += 1)
 
     return nothing

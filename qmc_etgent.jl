@@ -58,7 +58,6 @@ function run_incremental_sampling_gs(
         end
 
         sampler.p[i] = exp(-(replica.logdetGA_up[] + replica.logdetGA_dn[]) / Nₖ)
-        print(sampler.p[i])
     end
 
     # store the measurement
