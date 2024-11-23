@@ -2,17 +2,17 @@
 using JLD
 include("./averaging_utils.jl")
 
-path_src = "./data/2x2/pq2/"
-path_dst = "./data/2x2/processed/"
+path_src = "./data/3x3/pq2/"
+path_dst = "./data/3x3/processed/"
 
-# filling_list = vcat([(1, x) for x in 1:6],
-#     [(2, x) for x in 2:6],
-#     [(3, x) for x in 3:6],
-#     [(4, x) for x in 4:6],
-#     [(5, x) for x in 5:6],
-#     [(6, 6)])
-filling_list = [(1, 1), (1, 2), (2, 2), (3, 3)]
-LA = 2
+filling_list = vcat([(1, x) for x in 1:6],
+    [(2, x) for x in 2:6],
+    [(3, x) for x in 3:6],
+    [(4, x) for x in 4:6],
+    [(5, x) for x in 5:6],
+    [(6, 6)])
+# filling_list = [(1, 1), (1, 2), (2, 2), (3, 3)]
+LA = 3
 
 Pmn2_avg = zeros(Float64, LA + 1, LA + 1, length(filling_list))
 Pmn2_err = zeros(Float64, LA + 1, LA + 1, length(filling_list))
