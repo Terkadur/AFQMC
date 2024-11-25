@@ -1,0 +1,13 @@
+ERROR: LoadError: BoundsError: attempt to access 1-element Vector{String} at index [2]
+Stacktrace:
+ [1] throw_boundserror(A::Vector{String}, I::Tuple{Int64})
+   @ Base ./essentials.jl:14
+ [2] getindex(A::Vector{String}, i::Int64)
+   @ Base ./essentials.jl:916
+ [3] top-level scope
+   @ /oscar/home/trazzaz/AFQMC/job_etgent.jl:15
+in expression starting at /oscar/home/trazzaz/AFQMC/job_etgent.jl:15
+
+real	0m11.807s
+user	0m5.558s
+sys	0m0.393s
