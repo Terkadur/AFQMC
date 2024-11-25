@@ -1,21 +1,22 @@
 
 using JLD, Measurements, Statistics
 
-path_src = "./data/3x3/etgent/"
-path_dst = "./data/3x3/processed/"
+path_src = "./data/1x10/etgent/"
+path_dst = "./data/1x10/processed/"
 lambda_list = collect(0.0:0.2:0.8)
 lambdas = length(lambda_list)
 
-filling_list = vcat([(x, x) for x in collect(2:8)])
+filling_list = vcat([(x, x) for x in collect(1:7)])
+partition_list = collect(1:9)
 
-S2_avg = zeros(Float64, length(filling_list))
-S2_err = zeros(Float64, length(filling_list))
+S2_avg = zeros(Float64, length(partition_list))
+S2_err = zeros(Float64, length(partition_list))
 
 S2_conv = Vector{Float64}[]
 
-for (i, filling) in enumerate(filling_list)
+for (i, partition) in enumerate(partition_list)
     # merge data
-    filelist = [filter(x -> match(Regex("EtgEnt_LA3_Nup$(filling[1])_Ndn$(filling[2])_U2.0_lambda$(lambda)_beta45.0_*"), x) !== nothing, readdir(path_src)) for lambda in lambda_list]
+    filelist = [filter(x -> match(Regex("EtgEnt_LA$(partition)_N10_U2.0_lambda$(lambda)_beta50.0_*"), x) !== nothing, readdir(path_src)) for lambda in lambda_list]
     detgA_list = Vector{Float64}[]
     for filenames in filelist
         # raw data is saved in multiple files
@@ -45,8 +46,8 @@ for (i, filling) in enumerate(filling_list)
     push!(S2_conv, vec(-log.(prod(detgA_run, dims=1))))
 end
 
-jldopen("$(path_dst)" * "EtgEnt_LA3_U2.0_beta45.0.jld", "w") do file
-    write(file, "filling", filling_list)
+jldopen("$(path_dst)" * "EtgEnt_Nup5_Ndn5_U2.0_beta50.0.jld", "w") do file
+    write(file, "partition", partition_list)
     write(file, "S2_avg", S2_avg)
     write(file, "S2_err", S2_err)
     write(file, "S2_conv", S2_conv)
