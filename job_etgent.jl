@@ -12,7 +12,7 @@ const T = hopping_matrix_Hubbard_2d(Lx, Ly, 1.0)
 const U = -2.0
 @show U
 
-const N_up, N_dn = 32, 32
+const N_up, N_dn = 16, 16
 
 const system = GenericHubbard(
     # (Nx, Ny), (N_up, N_dn)
@@ -44,9 +44,9 @@ const qmc = QMC(
 )
 
 
-const φ₀_up = trial_wf_free(system, 1, T)
-const φ₀_dn = trial_wf_free(system, 2, T)
-const φ₀ = [φ₀_up, φ₀_dn]
+# const φ₀_up = trial_wf_free(system, 1, T)
+# const φ₀_dn = trial_wf_free(system, 2, T)
+const φ₀ = trial_wf_HF(system, ϵ=1e-10)
 
 const Aidx = collect(1:16)
 const extsys = ExtendedSystem(system, Aidx, subsysOrdering=false)
