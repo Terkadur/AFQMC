@@ -62,13 +62,12 @@ function run_incremental_sampling_gs(
         else
             sampler.p[i] = exp(-(replica.logdetGA_up[] + replica.logdetGA_dn[]) / Nₖ)
         end
-        println(sampler.p[i])
     end
 
     # store the measurement
-    # jldopen("$(path)/$(filename)", "w") do file
-    #     write(file, "detgA", sampler.p)
-    # end
+    jldopen("$(path)/$(filename)", "w") do file
+        write(file, "detgA", sampler.p)
+    end
 
     return nothing
 end

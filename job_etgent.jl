@@ -5,6 +5,7 @@ seed = 1234 #parse(Int64, ARGS[1])
 Random.seed!(seed)
 
 const Nₖ = 5
+const λₖ_list = collect(0.0:0.2:0.8)
 
 const Lx, Ly = 3, 3
 const T = hopping_matrix_Hubbard_2d(Lx, Ly, 1.0)
@@ -45,6 +46,7 @@ const qmc = QMC(
 
 # const φ₀_up = trial_wf_free(system, 1, T)
 # const φ₀_dn = trial_wf_free(system, 2, T)
+# const φ₀ = [φ₀_up, φ₀_dn]
 const φ₀ = trial_wf_HF(system, ϵ=1e-10)
 
 const Aidx = collect(1:3)
@@ -54,7 +56,8 @@ path = "./attr_data/3x3/sym"
 
 swap_period = 256
 
-λₖ = parse(Float64, ARGS[3])
-@show λₖ
-filename = "etgent/EtgEnt_LA$(length(Aidx))_N$(sum(system.N))_U$(system.U)_lambda$(λₖ)_beta$(system.β)_seed$(seed).jld"
-@time run_incremental_sampling_gs(extsys, qmc, φ₀, λₖ, Nₖ, path, filename, swap_period)
+for λₖ in λₖ_list
+    @show λₖ
+    filename = "etgent/EtgEnt_LA$(length(Aidx))_N$(sum(system.N))_U$(system.U)_lambda$(λₖ)_beta$(system.β)_seed$(seed).jld"
+    @time run_incremental_sampling_gs(extsys, qmc, φ₀, λₖ, Nₖ, path, filename, swap_period)
+end
