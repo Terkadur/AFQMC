@@ -12,7 +12,7 @@ const T = hopping_matrix_Hubbard_2d(Lx, Ly, 1.0)
 const U = -2.0
 @show U
 
-const N_up, N_dn = 16, 16
+const N_up, N_dn = 32, 32
 
 const system = GenericHubbard(
     # (Nx, Ny), (N_up, N_dn)
