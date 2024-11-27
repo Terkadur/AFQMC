@@ -92,12 +92,12 @@ function run_regular_sampling_gs(
                 sweep!(system, qmc, replica, walker2, 2, loop_number=bins, jumpReplica=true)
             end
 
-            try
-                measure_Pn2!(sampler, replica, forwardMeasurement=true, forceSymmetry=qmc.forceSymmetry)
-            catch
-                print("Pn2 measurement failed on sample ")
-                println(i)
-            end
+            # try
+            measure_Pn2!(sampler, replica, forwardMeasurement=true, forceSymmetry=qmc.forceSymmetry)
+            # catch
+            #     print("Pn2 measurement failed on sample ")
+            #     println(i)
+            # end
         end
     end
 

@@ -4,12 +4,12 @@ seed = 1234
 @show seed
 Random.seed!(seed)
 
-const Lx, Ly = 2, 4
+const Lx, Ly = 3, 3
 const T = hopping_matrix_Hubbard_2d(Lx, Ly, 1.0)
 const U = 2.0
 @show U
 
-const N_up, N_dn = parse(Int64, ARGS[1]), parse(Int64, ARGS[2])
+const N_up, N_dn = 7, 7 #parse(Int64, ARGS[1]), parse(Int64, ARGS[2])
 
 const system = GenericHubbard(
     # (Nx, Ny), (N_up, N_dn)
@@ -31,7 +31,7 @@ const system = GenericHubbard(
 const qmc = QMC(
     system,
     # number of warm-ups, samples and measurement interval
-    512, 8192, 10,
+    0, 8192, 10,
     # stablization and update interval
     10, 10,
     # if force spin symmetry
@@ -44,7 +44,7 @@ const φ₀_up = trial_wf_free(system, 1, T)
 const φ₀_dn = trial_wf_free(system, 2, T)
 const φ₀ = [φ₀_up, φ₀_dn]
 
-const Aidx = collect(1:4)
+const Aidx = collect(1:3)
 const extsys = ExtendedSystem(system, Aidx, subsysOrdering=false)
 
 swap_period = 256
