@@ -1,5 +1,5 @@
 #!/bin/sh
-#SBATCH -t 24:00:00
+#SBATCH -t 12:00:00
 #SBATCH -n 8
 #SBATCH -N 1
 #SBATCH --mem=2G
