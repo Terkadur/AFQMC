@@ -1,12 +1,12 @@
 
 using JLD, Measurements, Statistics
 
-path_src = "./data/8x8/sym/etgent/"
-path_dst = "./data/8x8/sym/processed/"
+path_src = "./attr_data/3x3/asym/etgent/"
+path_dst = "./attr_data/3x3/asym/processed/"
 lambda_list = collect(0.0:0.2:0.8)
 lambdas = length(lambda_list)
 
-filling_list = [32, 64]
+filling_list = collect(2:2:16)
 # partition_list = [8] #collect(1:9)
 
 S2_avg = zeros(Float64, length(filling_list))
@@ -16,7 +16,7 @@ S2_conv = Vector{Float64}[]
 
 for (i, filling) in enumerate(filling_list)
     # merge data
-    filelist = [filter(x -> match(Regex("EtgEnt_LA16_N$(filling)_U-2.0_lambda$(lambda)_beta50.0_*"), x) !== nothing, readdir(path_src)) for lambda in lambda_list]
+    filelist = [filter(x -> match(Regex("EtgEnt_LA3_N$(filling)_U-2.0_lambda$(lambda)_beta50.0_*"), x) !== nothing, readdir(path_src)) for lambda in lambda_list]
     if isempty(filelist[1])
         throw("no files found")
     end
@@ -49,7 +49,7 @@ for (i, filling) in enumerate(filling_list)
     push!(S2_conv, vec(-log.(prod(detgA_run, dims=1))))
 end
 
-jldopen("$(path_dst)" * "EtgEnt_U-2.0_beta50.0.jld", "w") do file
+jldopen("$(path_dst)" * "EtgEnt_LA3_U-2.0_beta50.0.jld", "w") do file
     write(file, "filling", filling_list)
     write(file, "S2_avg", S2_avg)
     write(file, "S2_err", S2_err)

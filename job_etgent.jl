@@ -38,26 +38,25 @@ const qmc = QMC(
     # stablization and update interval
     10, 10,
     # if force spin symmetry
-    forceSymmetry=true,
+    forceSymmetry=false,
     # debugging flag
     saveRatio=false
 )
 
 
-# const φ₀_up = trial_wf_free(system, 1, T)
-# const φ₀_dn = trial_wf_free(system, 2, T)
-# const φ₀ = [φ₀_up, φ₀_dn]
-const φ₀ = trial_wf_HF(system, ϵ=1e-10)
+const φ₀_up = trial_wf_free(system, 1, T)
+const φ₀_dn = trial_wf_free(system, 2, T)
+const φ₀ = [φ₀_up, φ₀_dn]
+# const φ₀ = trial_wf_HF(system, ϵ=1e-10)
 
 const Aidx = collect(1:3)
 const extsys = ExtendedSystem(system, Aidx, subsysOrdering=false)
 
-path = "./attr_data/3x3/sym"
+path = "./attr_data/3x3/asym"
 
 swap_period = 256
 
-for λₖ in λₖ_list
-    @show λₖ
-    filename = "etgent/EtgEnt_LA$(length(Aidx))_N$(sum(system.N))_U$(system.U)_lambda$(λₖ)_beta$(system.β)_seed$(seed).jld"
-    @time run_incremental_sampling_gs(extsys, qmc, φ₀, λₖ, Nₖ, path, filename, swap_period)
-end
+const λₖ = parse(Float64, ARGS[3])
+@show λₖ
+filename = "etgent/EtgEnt_LA$(length(Aidx))_N$(sum(system.N))_U$(system.U)_lambda$(λₖ)_beta$(system.β)_seed$(seed).jld"
+@time run_incremental_sampling_gs(extsys, qmc, φ₀, λₖ, Nₖ, path, filename, swap_period)
