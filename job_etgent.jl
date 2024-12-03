@@ -12,7 +12,7 @@ const T = hopping_matrix_Hubbard_2d(Lx, Ly, 1.0)
 const U = -2.0
 @show U
 
-const N_up, N_dn = parse(Int64, ARGS[1]), parse(Int64, ARGS[2])
+const N_up, N_dn = 1, 1 #parse(Int64, ARGS[1]), parse(Int64, ARGS[2])
 
 const system = GenericHubbard(
     # (Nx, Ny), (N_up, N_dn)
@@ -34,7 +34,7 @@ const system = GenericHubbard(
 const qmc = QMC(
     system,
     # number of warm-ups, samples and measurement interval
-    512, 8192, 10,
+    0, 128, 10,
     # stablization and update interval
     10, 10,
     # if force spin symmetry
@@ -56,7 +56,7 @@ path = "./attr_data/3x3/asym"
 
 swap_period = 256
 
-const λₖ = parse(Float64, ARGS[3])
+const λₖ = 0.0 #parse(Float64, ARGS[3])
 @show λₖ
 filename = "etgent/EtgEnt_LA$(length(Aidx))_N$(sum(system.N))_U$(system.U)_lambda$(λₖ)_beta$(system.β)_seed$(seed).jld"
 @time run_incremental_sampling_gs(extsys, qmc, φ₀, λₖ, Nₖ, path, filename, swap_period)

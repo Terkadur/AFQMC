@@ -65,9 +65,9 @@ function run_incremental_sampling_gs(
     end
 
     # store the measurement
-    jldopen("$(path)/$(filename)", "w") do file
-        write(file, "detgA", sampler.p)
-    end
+    # jldopen("$(path)/$(filename)", "w") do file
+    #     write(file, "detgA", sampler.p)
+    # end
 
     return nothing
 end
