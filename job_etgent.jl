@@ -9,7 +9,7 @@ const λₖ_list = collect(0.0:0.2:0.8)
 
 const Lx, Ly = 3, 3
 const T = hopping_matrix_Hubbard_2d(Lx, Ly, 1.0)
-const U = -2.0
+const U = 2.0
 @show U
 
 const N_up, N_dn = 1, 1 #parse(Int64, ARGS[1]), parse(Int64, ARGS[2])
@@ -34,7 +34,7 @@ const system = GenericHubbard(
 const qmc = QMC(
     system,
     # number of warm-ups, samples and measurement interval
-    0, 128, 10,
+    0, 32, 10,
     # stablization and update interval
     10, 10,
     # if force spin symmetry
