@@ -61,9 +61,8 @@ function run_incremental_sampling_gs(
         if qmc.forceSymmetry
             sampler.p[i] = exp(-2 * replica.logdetGA_up[] / Nₖ)
         else
-            sampler.p[i] = exp(-(replica.logdetGA_up[] + replica.logdetGA_dn[]) / Nₖ)
-            # sampler.p[i] = replica.sgnlogdetGA_up[] * replica.sgnlogdetGA_dn[] * exp(-(replica.logdetGA_up[] + replica.logdetGA_dn[]) / Nₖ)
-            @show sampler.p[i]
+            # sampler.p[i] = exp(-(replica.logdetGA_up[] + replica.logdetGA_dn[]) / Nₖ)
+            sampler.p[i] = replica.sgnlogdetGA_up[] * replica.sgnlogdetGA_dn[] * exp(-(replica.logdetGA_up[] + replica.logdetGA_dn[]) / Nₖ)
         end
     end
 
