@@ -52,7 +52,7 @@ const φ₀ = [φ₀_up, φ₀_dn]
 const Aidx = collect(1:2)
 const extsys = ExtendedSystem(system, Aidx, subsysOrdering=false)
 
-path = "./rep_data/3x3"
+path = "./rep_data/2x2"
 
 swap_period = 256
 
