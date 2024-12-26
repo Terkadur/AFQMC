@@ -574,10 +574,24 @@ function sweep!_asymmetric(
             ridx == 1 ? begin
                 logdetGA_up[], sgnlogdetGA_up[] = @views inv_Grover!(replica.GA⁻¹_up, G₀_up[Aidx, Aidx], G₀′_up[Aidx, Aidx], replica.ws)
                 logdetGA_dn[], sgnlogdetGA_dn[] = @views inv_Grover!(replica.GA⁻¹_dn, G₀_dn[Aidx, Aidx], G₀′_dn[Aidx, Aidx], replica.ws)
+
+                # if real(sgnlogdetGA_up[]) < 0
+                #     @show sgnlogdetGA_up[]
+                # end
+                # if real(sgnlogdetGA_dn[]) < 0
+                #     @show sgnlogdetGA_dn[]
+                # end
             end :
             begin
                 logdetGA_up[], sgnlogdetGA_up[] = @views inv_Grover!(replica.GA⁻¹_up, G₀′_up[Aidx, Aidx], G₀_up[Aidx, Aidx], replica.ws)
                 logdetGA_dn[], sgnlogdetGA_dn[] = @views inv_Grover!(replica.GA⁻¹_dn, G₀′_dn[Aidx, Aidx], G₀_dn[Aidx, Aidx], replica.ws)
+
+                # if real(sgnlogdetGA_up[]) < 0
+                #     @show sgnlogdetGA_up[]
+                # end
+                # if real(sgnlogdetGA_dn[]) < 0
+                #     @show sgnlogdetGA_dn[]
+                # end
             end
 
             cidx == 2Θ && (
@@ -638,11 +652,25 @@ function sweep!_asymmetric(
         # recompute Grover inverse
         ridx == 1 ? begin
             logdetGA_up[], sgnlogdetGA_up[] = @views inv_Grover!(replica.GA⁻¹_up, G₀_up[Aidx, Aidx], G₀′_up[Aidx, Aidx], replica.ws)
-            logdetGA_dn[], sgnlogdetGA_dn[] = @views inv_Grover!(replica.GA⁻¹_dn, G₀_dn[Aidx, Aidx], G₀′_dn[Aidx, Aidx], replica.ws)
+            # logdetGA_dn[], sgnlogdetGA_dn[] = @views inv_Grover!(replica.GA⁻¹_dn, G₀_dn[Aidx, Aidx], G₀′_dn[Aidx, Aidx], replica.ws)
+
+            # if real(sgnlogdetGA_up[]) < 0
+            #     @show sgnlogdetGA_up[]
+            # end
+            # if real(sgnlogdetGA_dn[]) < 0
+            #     @show sgnlogdetGA_dn[]
+            # end
         end :
         begin
             logdetGA_up[], sgnlogdetGA_up[] = @views inv_Grover!(replica.GA⁻¹_up, G₀′_up[Aidx, Aidx], G₀_up[Aidx, Aidx], replica.ws)
             logdetGA_dn[], sgnlogdetGA_dn[] = @views inv_Grover!(replica.GA⁻¹_dn, G₀′_dn[Aidx, Aidx], G₀_dn[Aidx, Aidx], replica.ws)
+
+            # if real(sgnlogdetGA_up[]) < 0
+            #     @show sgnlogdetGA_up[]
+            # end
+            # if real(sgnlogdetGA_dn[]) < 0
+            #     @show sgnlogdetGA_dn[]
+            # end
         end
 
         cidx == 1 && (

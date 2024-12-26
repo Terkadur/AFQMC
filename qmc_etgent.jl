@@ -41,6 +41,7 @@ function run_incremental_sampling_gs(
     # measurements
     println("Measuring")
     for i in 1:qmc.nsamples
+        println(i)
         if (i - 1) % swap_period < swap_period / 2 - 1
             sweep!(system, qmc, replica, walker1, 1, loop_number=bins, jumpReplica=false)
         elseif (i - 1) % swap_period == swap_period / 2 - 1
@@ -61,13 +62,15 @@ function run_incremental_sampling_gs(
             sampler.p[i] = exp(-2 * replica.logdetGA_up[] / Nₖ)
         else
             sampler.p[i] = exp(-(replica.logdetGA_up[] + replica.logdetGA_dn[]) / Nₖ)
+            # sampler.p[i] = replica.sgnlogdetGA_up[] * replica.sgnlogdetGA_dn[] * exp(-(replica.logdetGA_up[] + replica.logdetGA_dn[]) / Nₖ)
+            @show sampler.p[i]
         end
     end
 
     # store the measurement
-    # jldopen("$(path)/$(filename)", "w") do file
-    #     write(file, "detgA", sampler.p)
-    # end
+    jldopen("$(path)/$(filename)", "w") do file
+        write(file, "detgA", sampler.p)
+    end
 
     return nothing
 end
