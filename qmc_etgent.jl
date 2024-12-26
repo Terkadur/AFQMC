@@ -16,7 +16,8 @@ function run_incremental_sampling_gs(
 
     bins = qmc.measure_interval
 
-    sampler = EtgSampler(extsys, qmc)
+    detgA = zeros(qmc.nsamples)
+    sgn = zeros(qmc.nsamples)
 
     # warm-up steps
     println("Warming up")
@@ -59,16 +60,17 @@ function run_incremental_sampling_gs(
         end
 
         if qmc.forceSymmetry
-            sampler.p[i] = exp(-2 * replica.logdetGA_up[] / Nₖ)
+            detgA[i] = exp(-2 * replica.logdetGA_up[] / Nₖ)
         else
-            # sampler.p[i] = exp(-(replica.logdetGA_up[] + replica.logdetGA_dn[]) / Nₖ)
-            sampler.p[i] = replica.sgnlogdetGA_up[] * replica.sgnlogdetGA_dn[] * exp(-(replica.logdetGA_up[] + replica.logdetGA_dn[]) / Nₖ)
+            detgA[i] = exp(-(replica.logdetGA_up[] + replica.logdetGA_dn[]) / Nₖ)
+            sgn[i] = replica.sgnlogdetGA_up[] * replica.sgnlogdetGA_dn[]
         end
     end
 
     # store the measurement
     jldopen("$(path)/$(filename)", "w") do file
-        write(file, "detgA", sampler.p)
+        write(file, "detgA", detgA)
+        write(file, "sgn", sgn)
     end
 
     return nothing

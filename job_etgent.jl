@@ -49,7 +49,7 @@ const φ₀_dn = trial_wf_free(system, 2, T)
 const φ₀ = [φ₀_up, φ₀_dn]
 # const φ₀ = trial_wf_HF(system, ϵ=1e-10)
 
-const Aidx = collect(1:3)
+const Aidx = collect(1:2)
 const extsys = ExtendedSystem(system, Aidx, subsysOrdering=false)
 
 path = "./rep_data/3x3"
@@ -58,5 +58,5 @@ swap_period = 256
 
 const λₖ = parse(Float64, ARGS[1])
 @show λₖ
-filename = "etgent_no_sgn/EtgEnt_LA$(length(Aidx))_Nup$(system.N[1])_Ndn$(system.N[2])_U$(system.U)_lambda$(λₖ)_beta$(system.β)_seed$(seed).jld"
+filename = "etgent_with_sgn/EtgEnt_LA$(length(Aidx))_Nup$(system.N[1])_Ndn$(system.N[2])_U$(system.U)_lambda$(λₖ)_beta$(system.β)_seed$(seed).jld"
 @time run_incremental_sampling_gs(extsys, qmc, φ₀, λₖ, Nₖ, path, filename, swap_period)

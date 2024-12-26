@@ -1,8 +1,8 @@
 
 using JLD, Measurements, Statistics
 
-path_src = "./attr_data/3x3/asym/etgent/"
-path_dst = "./attr_data/3x3/asym/processed/"
+path_src = "./rep_data/3x3/etgent_no_sgn/"
+path_dst = "./rep_data/3x3/processed/"
 lambda_list = collect(0.0:0.2:0.8)
 lambdas = length(lambda_list)
 
