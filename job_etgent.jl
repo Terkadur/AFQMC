@@ -12,7 +12,7 @@ const T = hopping_matrix_Hubbard_2d(Lx, Ly, 1.0)
 const U = 2.0
 @show U
 
-const N_up, N_dn = 1, 2 #parse(Int64, ARGS[1]), parse(Int64, ARGS[2])
+const N_up, N_dn = 2, 2 #parse(Int64, ARGS[1]), parse(Int64, ARGS[2])
 
 const system = GenericHubbard(
     # (Nx, Ny), (N_up, N_dn)
@@ -40,7 +40,7 @@ const qmc = QMC(
     # if force spin symmetry
     forceSymmetry=false,
     # debugging flag
-    saveRatio=false
+    saveRatio=true
 )
 
 
