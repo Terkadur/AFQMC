@@ -42,7 +42,6 @@ function run_incremental_sampling_gs(
     # measurements
     println("Measuring")
     for i in 1:qmc.nsamples
-        println(i)
         if (i - 1) % swap_period < swap_period / 2 - 1
             sweep!(system, qmc, replica, walker1, 1, loop_number=bins, jumpReplica=false)
         elseif (i - 1) % swap_period == swap_period / 2 - 1
