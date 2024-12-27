@@ -16,7 +16,7 @@ S2_conv = Vector{Float64}[]
 
 # for (i, filling) in enumerate(filling_list)
 i = 1
-filling = (1, 2)
+filling = (2, 2)
 # merge data
 filelist = [filter(x -> match(Regex("EtgEnt_LA2_Nup$(filling[1])_Ndn$(filling[2])_U2.0_lambda$(lambda)_beta50.0_*"), x) !== nothing, readdir(path_src)) for lambda in lambda_list]
 if isempty(filelist[1])
@@ -28,7 +28,7 @@ for filenames in filelist
     # raw data is saved in multiple files
     data = load.("$(path_src)" .* filenames)
     # merge raw data
-    tmp = [data[i]["sgn"] .* data[i]["detgA"] for i in 1:length(filenames)]
+    tmp = [data[i]["detgA"] for i in 1:length(filenames)]
     push!(detgA_list, vcat(tmp...))
 
     tmp = [data[i]["sgn"] for i in 1:length(filenames)]
@@ -43,7 +43,7 @@ S2 = -log(prod(expmS2))
 S2_avg[i] = S2.val
 S2_err[i] = S2.err
 
-@show detgA_avg
+@show S2.val
 
 # convergence
 # sweeps = length(detgA_list[1])

@@ -1,9 +1,0 @@
-## SLURM PROLOG ###############################################################
-##    Job ID : 7477108
-##  Job Name : sbatch_etgent.sh
-##  Nodelist : node1708
-##      CPUs : 8
-##  Mem/Node : 2048 MB
-## Directory : /oscar/home/trazzaz/AFQMC
-##   Job Started : Thu Dec 26 08:50:59 PM EST 2024
-###############################################################################

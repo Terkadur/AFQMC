@@ -1,6 +1,0 @@
-/var/spool/slurmd/job7477103/slurm_script: line 14: 1730168 Killed                  julia --project=@. job_etgent.jl $1
-
-real	7m45.753s
-user	7m41.883s
-sys	0m2.721s
-slurmstepd: error: Detected 1 oom_kill event in StepId=7477103.batch. Some of the step tasks have been OOM Killed.
