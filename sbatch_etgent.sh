@@ -2,7 +2,7 @@
 #SBATCH -t 1:00:00
 #SBATCH -n 8
 #SBATCH -N 1
-#SBATCH --mem=2G
+#SBATCH --mem=4G
 #SBATCH --account=default
 #SBATCH -e ./output/etgent_%j.err
 #SBATCH -o ./output/etgent_%j.out
