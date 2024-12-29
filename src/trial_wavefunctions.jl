@@ -13,7 +13,7 @@
 function trial_wf_free(system::System, spin::Int, T::AbstractMatrix)
     wf_hopping = copy(T)
     # creat a small flux
-    map!(x -> x *= (1+0.05*rand()), wf_hopping, T)
+    map!(x -> x *= (1 + 0.05 * rand()), wf_hopping, T)
 
     # force Hermiticity
     wf_hopping += wf_hopping'
@@ -23,11 +23,24 @@ function trial_wf_free(system::System, spin::Int, T::AbstractMatrix)
     return wf_eig.vectors[:, 1:system.N[spin]]
 end
 
+function trial_wf_free_asym(system::System, T::AbstractMatrix)
+    wf_hopping = copy(T)
+    # creat a small flux
+    map!(x -> x *= (1 + 0.05 * rand()), wf_hopping, T)
+
+    # force Hermiticity
+    wf_hopping += wf_hopping'
+    wf_hopping /= 2
+    wf_eig = eigen(wf_hopping)
+
+    return [wf_eig.vectors[:, 1:system.N[1]], wf_eig.vectors[:, 1:system.N[2]]]
+end
+
 ### Hatree Fock Trial Wave Function ###
 
 function HF_wf_solver(H::AbstractMatrix, N::Int; returnWF::Bool=false)
     H_eig = eigen(H)
-    ϕ  = H_eig.vectors[:,1:N]
+    ϕ = H_eig.vectors[:, 1:N]
     returnWF && return ϕ
     ϕᵀ = Matrix(transpose(ϕ))
     return diag(ϕ * inv(ϕᵀ * ϕ) * ϕᵀ)
@@ -75,28 +88,28 @@ end
 """
 function bcs_params(Lx::Int, Ly::Int, t::Float64, U::Float64)
 
-    L = Lx*Ly
+    L = Lx * Ly
 
     # wave numbers for PBC
-    kx, ky = collect(0.0 : 1/Lx : 1-1/Lx), collect(0.0 : 1/Ly : 1-1/Ly)
+    kx, ky = collect(0.0:1/Lx:1-1/Lx), collect(0.0:1/Ly:1-1/Ly)
     # hopping energy as a function of wave numbers
-    Ehop = [-2t*(cos(2π * kx[Nx]) + cos(2π * ky[Ny])) for Nx in 1:Lx for Ny in 1:Ly]
+    Ehop = [-2t * (cos(2π * kx[Nx]) + cos(2π * ky[Ny])) for Nx in 1:Lx for Ny in 1:Ly]
 
     # self-consistently solving for Δsc
     Δ = abs(U)
-    Ek = sqrt.(Ehop.^2 .+ Δ^2)
-    Δ′ = -U * sum(Δ ./ (2*Ek*L))
+    Ek = sqrt.(Ehop .^ 2 .+ Δ^2)
+    Δ′ = -U * sum(Δ ./ (2 * Ek * L))
     while abs(Δ - Δ′) > 1e-10
         Δ = Δ′
-        Ek = sqrt.(Ehop.^2 .+ Δ^2)
-        Δ′ = -U * sum(Δ ./ (2*Ek*L))
+        Ek = sqrt.(Ehop .^ 2 .+ Δ^2)
+        Δ′ = -U * sum(Δ ./ (2 * Ek * L))
     end
 
     return Δ
 end
 
-function trial_wf_bcs(system::GenericHubbard; t::Float64 = 1.0)
-    
+function trial_wf_bcs(system::GenericHubbard; t::Float64=1.0)
+
     # set alias
     Lx, Ly = system.Ns[1], system.Ns[2]
     L = system.V    # number of sites

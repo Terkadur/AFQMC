@@ -1,6 +1,6 @@
 include("./qmc_etgent.jl")
 
-seed = 1236 #parse(Int64, ARGS[1])
+seed = parse(Int64, ARGS[1])
 @show seed
 Random.seed!(seed)
 
@@ -12,7 +12,7 @@ const T = hopping_matrix_Hubbard_2d(Lx, Ly, 1.0)
 const U = 2.0
 @show U
 
-const N_up, N_dn = 2, 2 #parse(Int64, ARGS[1]), parse(Int64, ARGS[2])
+const N_up, N_dn = 1, 2
 
 const system = GenericHubbard(
     # (Nx, Ny), (N_up, N_dn)
@@ -22,7 +22,7 @@ const system = GenericHubbard(
     # μ
     0.0,
     # β, L
-    50.0, 500,
+    parse(Float64, ARGS[2]), 10*parse(Int64, ARGS[2]),
     # data type of the systems
     sys_type=ComplexF64,
     # if use charge decomposition
@@ -34,29 +34,29 @@ const system = GenericHubbard(
 const qmc = QMC(
     system,
     # number of warm-ups, samples and measurement interval
-    512, 8192, 10,
+    1024, 8192, 10,
     # stablization and update interval
     10, 10,
     # if force spin symmetry
     forceSymmetry=false,
     # debugging flag
-    saveRatio=true
+    saveRatio=false
 )
 
-
-const φ₀_up = trial_wf_free(system, 1, T)
-const φ₀_dn = trial_wf_free(system, 2, T)
-const φ₀ = [φ₀_up, φ₀_dn]
+# const φ₀_up = trial_wf_free(system, 1, T)
+# const φ₀_dn = trial_wf_free(system, 2, T)
+# const φ₀ = [φ₀_up, φ₀_dn]
 # const φ₀ = trial_wf_HF(system, ϵ=1e-10)
+const φ₀ = trial_wf_free_asym(system, T)
 
 const Aidx = collect(1:2)
 const extsys = ExtendedSystem(system, Aidx, subsysOrdering=false)
 
-path = "./rep_data/2x2"
+path = "./data_with_sgn/2x2"
 
 swap_period = 256
 
-const λₖ = parse(Float64, ARGS[1])
+const λₖ = parse(Float64, ARGS[3])
 @show λₖ
-filename = "etgent_with_sgn/EtgEnt_LA$(length(Aidx))_Nup$(system.N[1])_Ndn$(system.N[2])_U$(system.U)_lambda$(λₖ)_beta$(system.β)_seed$(seed).jld"
+filename = "etgent/EtgEnt_LA$(length(Aidx))_Nup$(system.N[1])_Ndn$(system.N[2])_U$(system.U)_lambda$(λₖ)_beta$(system.β)_seed$(seed).jld"
 @time run_incremental_sampling_gs(extsys, qmc, φ₀, λₖ, Nₖ, path, filename, swap_period)

@@ -28,7 +28,7 @@ for filenames in filelist
     # raw data is saved in multiple files
     data = load.("$(path_src)" .* filenames)
     # merge raw data
-    tmp = [data[i]["detgA"] for i in 1:length(filenames)]
+    tmp = [data[i]["sgn"] .* data[i]["detgA"] for i in 1:length(filenames)]
     push!(detgA_list, vcat(tmp...))
 
     tmp = [data[i]["sgn"] for i in 1:length(filenames)]
@@ -55,9 +55,8 @@ S2_err[i] = S2.err
 #     detgA_run[i, :] = cumsum(detgAs) ./ collect(1:sweeps)
 # end
 # push!(S2_conv, vec(-log.(prod(detgA_run, dims=1))))
-# end
 
-# jldopen("$(path_dst)" * "EtgEnt_nosgn_LA2_U2.0_beta50.0.jld", "w") do file
+# jldopen("$(path_dst)" * "EtgEnt_withsgn_LA2_U2.0_beta50.0.jld", "w") do file
 #     # write(file, "filling", filling_list)
 #     write(file, "S2_avg", S2_avg)
 #     write(file, "S2_err", S2_err)

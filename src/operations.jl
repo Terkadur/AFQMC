@@ -624,7 +624,6 @@ function compute_Metropolis_ratio_asymmetric(
     end
     Γ_dn = transpose(a_dn) * b_dn
 
-
     # regular DQMC ratio
     d_up = 1 + α[1, σj] * (1 - Gτ_up)
     # ratio of detgA (Grover matrix) with a thermaldynamic integration variable (λₖ)

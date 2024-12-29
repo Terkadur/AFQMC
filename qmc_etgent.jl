@@ -17,7 +17,8 @@ function run_incremental_sampling_gs(
     bins = qmc.measure_interval
 
     detgA = zeros(qmc.nsamples)
-    sgn = zeros(qmc.nsamples)
+    sgndetgA = zeros(qmc.nsamples)
+    sgnprob = zeros(qmc.nsamples)
 
     # warm-up steps
     println("Warming up")
@@ -61,15 +62,23 @@ function run_incremental_sampling_gs(
         if qmc.forceSymmetry
             detgA[i] = exp(-2 * replica.logdetGA_up[] / Nₖ)
         else
-            detgA[i] = exp(-(replica.logdetGA_up[] + replica.logdetGA_dn[]) / Nₖ)
-            sgn[i] = replica.sgnlogdetGA_up[] * replica.sgnlogdetGA_dn[]
+            detgA[i] = real(exp(-(replica.logdetGA_up[] + replica.logdetGA_dn[]) / Nₖ))
+            sgndetgA[i] = real(replica.sgnlogdetGA_up[] * replica.sgnlogdetGA_dn[])
         end
+
+        sgnprob[i] = real(replica.sgnprob[])
+        @show mean(sgnprob[1:i])
+    end
+
+    if mean(sgnprob) < 0
+        sgnprob .*= -1
     end
 
     # store the measurement
     jldopen("$(path)/$(filename)", "w") do file
+        write(file, "sgnprob", sgnprob)
         write(file, "detgA", detgA)
-        write(file, "sgn", sgn)
+        write(file, "sgndetgA", sgndetgA)
     end
 
     return nothing

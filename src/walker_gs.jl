@@ -116,9 +116,10 @@ function HubbardWalker(
 
     # initialize temporal data for storage
     Fτ = ldrs(G[1], 4)
-    copyto!.(Fτ[2:3], Fr)
+    # copyto!.(Fτ[2:3], Fr) TODO why is this here?
     Bl = Cluster(Ns, 2 * qmc.stab_interval, T=T)
     Bc = Cluster(Ns, qmc.K, T=T)
+
     tmp_r = Vector{T}()
 
     return HubbardWalker{T,eltype(φ₀),eltype(Fl),eltype(ws.v),eltype(Bl.B)}(
