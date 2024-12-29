@@ -14,6 +14,9 @@ const U = 2.0
 
 const N_up, N_dn = 1, 2
 
+const β = parse(Float64, ARGS[2])
+@show β
+
 const system = GenericHubbard(
     # (Nx, Ny), (N_up, N_dn)
     (Lx, Ly, 1), (N_up, N_dn),
@@ -22,7 +25,7 @@ const system = GenericHubbard(
     # μ
     0.0,
     # β, L
-    parse(Float64, ARGS[2]), 10*parse(Int64, ARGS[2]),
+    β, 10*convert(Int64, β),
     # data type of the systems
     sys_type=ComplexF64,
     # if use charge decomposition
