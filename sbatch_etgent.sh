@@ -1,5 +1,5 @@
 #!/bin/sh
-#SBATCH -t 30:00
+#SBATCH -t 1:00:00
 #SBATCH -n 8
 #SBATCH -N 1
 #SBATCH --mem=4G
@@ -11,4 +11,4 @@ ulimit -s unlimited
 
 module load julia
 
-time julia --project=@. job_etgent.jl $1
+time julia --project=@. job_etgent.jl $1 $2 $3

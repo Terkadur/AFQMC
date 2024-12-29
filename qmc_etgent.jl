@@ -67,7 +67,6 @@ function run_incremental_sampling_gs(
         end
 
         sgnprob[i] = real(replica.sgnprob[])
-        @show mean(sgnprob[1:i])
     end
 
     if mean(sgnprob) < 0
