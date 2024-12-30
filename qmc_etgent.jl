@@ -50,6 +50,7 @@ function run_incremental_sampling_gs(
             print("/")
             println(qmc.nsamples)
             sweep!(system, qmc, replica, walker1, 1, loop_number=bins, jumpReplica=true)
+            # @show mean(sgnprob[1:i-1])
         elseif swap_period / 2 - 1 < (i - 1) % swap_period < swap_period - 1
             sweep!(system, qmc, replica, walker2, 2, loop_number=bins, jumpReplica=false)
         else
@@ -57,6 +58,7 @@ function run_incremental_sampling_gs(
             print("/")
             println(qmc.nsamples)
             sweep!(system, qmc, replica, walker2, 2, loop_number=bins, jumpReplica=true)
+            # @show mean(sgnprob[1:i-1])
         end
 
         if qmc.forceSymmetry
@@ -76,7 +78,7 @@ function run_incremental_sampling_gs(
     # store the measurement
     jldopen("$(path)/$(filename)", "w") do file
         write(file, "sgnprob", sgnprob)
-        write(file, "detgA", detgA)
+        write(file, "absdetgA", detgA)
         write(file, "sgndetgA", sgndetgA)
     end
 

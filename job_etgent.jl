@@ -4,7 +4,7 @@ seed = parse(Int64, ARGS[1])
 @show seed
 Random.seed!(seed)
 
-const Nₖ = 5
+const Nₖ = 1
 const λₖ_list = collect(0.0:0.2:0.8)
 
 const Lx, Ly = 2, 2
@@ -25,7 +25,7 @@ const system = GenericHubbard(
     # μ
     0.0,
     # β, L
-    β, 10*convert(Int64, β),
+    β, 10 * convert(Int64, β),
     # data type of the systems
     sys_type=ComplexF64,
     # if use charge decomposition
@@ -59,7 +59,7 @@ path = "./data_with_sgn/2x2"
 
 swap_period = 256
 
-const λₖ = parse(Float64, ARGS[3])
+const λₖ = 0.0 #parse(Float64, ARGS[3])
 @show λₖ
-filename = "etgent/EtgEnt_LA$(length(Aidx))_Nup$(system.N[1])_Ndn$(system.N[2])_U$(system.U)_lambda$(λₖ)_beta$(system.β)_seed$(seed).jld"
+filename = "etgent_Nk1/EtgEnt_LA$(length(Aidx))_Nup$(system.N[1])_Ndn$(system.N[2])_U$(system.U)_lambda$(λₖ)_beta$(system.β)_seed$(seed).jld"
 @time run_incremental_sampling_gs(extsys, qmc, φ₀, λₖ, Nₖ, path, filename, swap_period)
