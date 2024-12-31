@@ -71,7 +71,7 @@ denom_run = cumsum(denom_list[1]) ./ collect(1:sweeps)
 push!(S2_conv, vec(-log.(abs.(numer_run ./ denom_run))))
 println(2)
 
-jldopen("$(path_dst)" * "EtgEnt_LA2_U2.0_beta18.0_Nk1.jld", "w") do file
+jldopen("$(path_dst)" * "EtgEnt_LA2_U2.0_beta12.0_Nk1.jld", "w") do file
     # write(file, "filling", filling_list)
     write(file, "S2_conv", S2_conv)
 end
