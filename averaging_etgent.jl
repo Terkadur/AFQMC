@@ -65,11 +65,9 @@ S2 = -log(prod(ratio))
 sweeps = length(numer_list[1])
 @assert length(denom_list[1]) == sweeps "Unequal number of sweeps for numer and denom"
 
-println(1)
 numer_run = cumsum(numer_list[1]) ./ collect(1:sweeps)
 denom_run = cumsum(denom_list[1]) ./ collect(1:sweeps)
 push!(S2_conv, vec(-log.(abs.(numer_run ./ denom_run))))
-println(2)
 
 jldopen("$(path_dst)" * "EtgEnt_LA2_U2.0_beta12.0_Nk1.jld", "w") do file
     # write(file, "filling", filling_list)
