@@ -12,7 +12,7 @@ S2_err = zeros(Float64, 1)
 S2_conv = Vector{Float64}[]
 
 # merge data
-filelist = [filter(x -> match(Regex("EtgEnt_LA2_Nup1_Ndn2_U2.0_lambda$(lambda)_beta6.0_*"), x) !== nothing, readdir(path_src)) for lambda in lambda_list]
+filelist = [filter(x -> match(Regex("EtgEnt_LA2_Nup1_Ndn2_U2.0_lambda$(lambda)_beta12.0_*"), x) !== nothing, readdir(path_src)) for lambda in lambda_list]
 if isempty(filelist[1])
     throw("no files found")
 end
@@ -62,9 +62,17 @@ S2 = -log(prod(ratio))
 # end
 # push!(S2_conv, vec(-log.(prod(detgA_run, dims=1))))
 
-# jldopen("$(path_dst)" * "EtgEnt_withsgn_LA2_U2.0_beta50.0.jld", "w") do file
-#     # write(file, "filling", filling_list)
-#     write(file, "S2_avg", S2_avg)
-#     write(file, "S2_err", S2_err)
-#     write(file, "S2_conv", S2_conv)
-# end
+sweeps = length(numer_list[1])
+@assert length(denom_list[1]) == sweeps "Unequal number of sweeps for numer and denom"
+
+println(1)
+numer_run = cumsum(numer_list[1]) ./ collect(1:sweeps)
+denom_run = cumsum(denom_list[1]) ./ collect(1:sweeps)
+push!(S2_conv, vec(-log.(abs.(numer_run ./ denom_run))))
+println(2)
+
+jldopen("$(path_dst)" * "EtgEnt_LA2_U2.0_beta18.0_Nk1.jld", "w") do file
+    # write(file, "filling", filling_list)
+    write(file, "S2_conv", S2_conv)
+end
+
