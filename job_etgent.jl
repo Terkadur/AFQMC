@@ -14,7 +14,7 @@ const U = 2.0
 
 const N_up, N_dn = 1, 2
 
-const β = parse(Float64, ARGS[2])
+const β = 12.0 #parse(Float64, ARGS[2])
 @show β
 
 const system = GenericHubbard(

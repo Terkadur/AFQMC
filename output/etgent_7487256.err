@@ -1,0 +1,15 @@
+ERROR: LoadError: MethodError: no method matching GenericHubbard(::Tuple{Int64, Int64, Int64}, ::Tuple{Int64, Int64}, ::Matrix{Float64}, ::Float64, ::Float64, ::Int64, ::Int64; sys_type::DataType, useChargeHST::Bool, useFirstOrderTrotter::Bool)
+The type `GenericHubbard` exists, but no method is defined for this combination of argument types when trying to construct it.
+
+Closest candidates are:
+  GenericHubbard(::Tuple{Int64, Int64, Int64}, ::Tuple{Int64, Int64}, ::AbstractMatrix, ::Float64, ::Float64, !Matched::Float64, ::Int64; sys_type, useChargeHST, useFirstOrderTrotter)
+   @ Main.SwapQMC /oscar/home/trazzaz/AFQMC/src/base/systems.jl:35
+
+Stacktrace:
+ [1] top-level scope
+   @ /oscar/home/trazzaz/AFQMC/job_etgent.jl:20
+in expression starting at /oscar/home/trazzaz/AFQMC/job_etgent.jl:20
+
+real	0m7.235s
+user	0m7.351s
+sys	0m0.319s
