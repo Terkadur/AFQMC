@@ -7,12 +7,12 @@ Random.seed!(seed)
 const Nₖ = 1
 const λₖ_list = collect(0.0:0.2:0.8)
 
-const Lx, Ly = 2, 2
+const Lx, Ly = 2, 4
 const T = hopping_matrix_Hubbard_2d(Lx, Ly, 1.0)
 const U = 2.0
 @show U
 
-const N_up, N_dn = 1, 3
+const N_up, N_dn = 2, 2
 
 const β = parse(Float64, ARGS[2])
 @show β
@@ -37,7 +37,7 @@ const system = GenericHubbard(
 const qmc = QMC(
     system,
     # number of warm-ups, samples and measurement interval
-    1024, 8192, 10,
+    1024, 16384, 10,
     # stablization and update interval
     10, 10,
     # if force spin symmetry
@@ -52,7 +52,7 @@ const qmc = QMC(
 # const φ₀ = trial_wf_HF(system, ϵ=1e-10)
 const φ₀ = trial_wf_free_asym(system, T)
 
-const Aidx = collect(1:2)
+const Aidx = collect(1:4)
 const extsys = ExtendedSystem(system, Aidx, subsysOrdering=false)
 
 path = "./data_with_sgn/2x2"
