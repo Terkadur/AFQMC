@@ -55,7 +55,7 @@ const φ₀ = trial_wf_free_asym(system, T)
 const Aidx = collect(1:4)
 const extsys = ExtendedSystem(system, Aidx, subsysOrdering=false)
 
-path = "./data_with_sgn/2x2"
+path = "./data_with_sgn/2x4"
 
 swap_period = 256
 
