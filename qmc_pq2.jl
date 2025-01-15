@@ -16,7 +16,7 @@ function run_regular_sampling_gs(
     bins = qmc.measure_interval
 
     sampler = EtgSampler(extsys, qmc)
-    sgnr = zeros(qmc.nsamples)
+    sgnprob = zeros(Int8, qmc.nsamples)
 
     # warm-up steps
     println("Warming up")
@@ -64,9 +64,13 @@ function run_regular_sampling_gs(
             println(i)
         end
 
-        sgnr[i] = replica.sgn_r[]
-        replica.sgn_r[] = convert(typeof(replica.sgn_r[]), 1)
-        @show mean(sgnr[1:i])
+        @show replica.sgnprob[]
+        # sgnprob[i] = real(replica.sgnprob[])
+        # replica.sgnprob[] = 1
+    end
+
+    if mean(sgnprob) < 0
+        sgnprob .*= -1
     end
 
     # store the measurement

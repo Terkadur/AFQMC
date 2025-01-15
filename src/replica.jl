@@ -60,8 +60,8 @@ struct Replica{W,T,E}
         logdetGA_dn, sgnlogdetGA_dn = inv_Grover!(GA⁻¹_dn, G₀1_dn[Aidx, Aidx], G₀2_dn[Aidx, Aidx], ws)
         a_up, b_up, t_up = zeros(T, LA), zeros(T, LA), zeros(T, LA)
         a_dn, b_dn, t_dn = zeros(T, LA), zeros(T, LA), zeros(T, LA)
-        Im2GA_up = I - 2 * G₀2_up[1:LA, 1:LA]
-        Im2GA_dn = I - 2 * G₀2_dn[1:LA, 1:LA]
+        Im2GA_up = I - 2 * G₀2_up[Aidx, Aidx]
+        Im2GA_dn = I - 2 * G₀2_dn[Aidx, Aidx]
         sgnprob = convert(T, 1)
 
         return new{W,T,Float64}(

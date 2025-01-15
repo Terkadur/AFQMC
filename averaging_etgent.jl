@@ -1,8 +1,8 @@
 
 using JLD, Measurements, Statistics
 
-path_src = "./data_with_sgn/2x2/etgent_Nk1/"
-path_dst = "./data_with_sgn/2x2/processed/"
+path_src = "./data_with_sgn/2x4/etgent_Nk1/"
+path_dst = "./data_with_sgn/2x4/processed/"
 lambda_list = [0.0] #collect(0.0:0.2:0.8)
 lambdas = length(lambda_list)
 
@@ -12,7 +12,7 @@ S2_err = zeros(Float64, 1)
 S2_conv = Vector{Float64}[]
 
 # merge data
-filelist = [filter(x -> match(Regex("EtgEnt_LA2_Nup1_Ndn2_U2.0_lambda$(lambda)_beta18.0_*"), x) !== nothing, readdir(path_src)) for lambda in lambda_list]
+filelist = [filter(x -> match(Regex("EtgEnt_LA4_Nup2_Ndn2_U2.0_lambda$(lambda)_beta12.0_*"), x) !== nothing, readdir(path_src)) for lambda in lambda_list]
 if isempty(filelist[1])
     throw("no files found")
 end
@@ -49,16 +49,12 @@ denom = measurement.(denom_avg, denom_err)
 S2_unsigned = -log(prod(detgA))
 S2_signed = -log(prod(numer ./ denom))
 
+@show S2_unsigned.err
+
 # detgA_avg = mean.(detgA_list)
 # detgA_err = std.(detgA_list) ./ length(detgA_list)
 # expmS2 = measurement.(detgA_avg, detgA_err)
 # S2 = -log(prod(expmS2))
-
-@show S2_unsigned.val
-@show S2_unsigned.err
-
-@show S2_signed.val
-@show S2_signed.err
 
 # convergence
 # sweeps = length(detgA_list[1])

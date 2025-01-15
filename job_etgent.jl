@@ -4,17 +4,14 @@ seed = parse(Int64, ARGS[1])
 @show seed
 Random.seed!(seed)
 
-const Nₖ = 1
-const λₖ_list = collect(0.0:0.2:0.8)
-
-const Lx, Ly = 2, 4
+const Lx, Ly = 3, 3
 const T = hopping_matrix_Hubbard_2d(Lx, Ly, 1.0)
 const U = 2.0
 @show U
 
-const N_up, N_dn = 2, 2
+const N_up, N_dn = parse(Int64, ARGS[2]), parse(Int64, ARGS[2])
 
-const β = parse(Float64, ARGS[2])
+const β = 6.0
 @show β
 
 const system = GenericHubbard(
@@ -52,14 +49,14 @@ const qmc = QMC(
 # const φ₀ = trial_wf_HF(system, ϵ=1e-10)
 const φ₀ = trial_wf_free_asym(system, T)
 
-const Aidx = collect(1:4)
+const Aidx = collect(1:3)
 const extsys = ExtendedSystem(system, Aidx, subsysOrdering=false)
 
-path = "./data_with_sgn/2x4"
+path = "./data_with_sgn/3x3"
 
 swap_period = 256
 
-const λₖ = 0.0 #parse(Float64, ARGS[3])
-@show λₖ
-filename = "etgent_Nk1/EtgEnt_LA$(length(Aidx))_Nup$(system.N[1])_Ndn$(system.N[2])_U$(system.U)_lambda$(λₖ)_beta$(system.β)_seed$(seed).jld"
+const Nₖ = 1
+const λₖ = 0.0
+filename = "etgent_noreset/EtgEnt_LA$(length(Aidx))_Nup$(system.N[1])_Ndn$(system.N[2])_U$(system.U)_beta$(system.β)_seed$(seed).jld"
 @time run_incremental_sampling_gs(extsys, qmc, φ₀, λₖ, Nₖ, path, filename, swap_period)

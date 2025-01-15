@@ -433,6 +433,7 @@ function update_cluster!_asymmetric(
         @views σ = walker.auxfield[:, l]
 
         # compute G <- Bk * G * Bk⁻¹ to enable fast update
+        # kinetic propagation
         system.useFirstOrderTrotter || begin
             wrap_G!(Gτ_up, Bk, Bk⁻¹, ws)
             wrap_G!(Gτ0_up, Bk, Bk⁻¹, ws)
