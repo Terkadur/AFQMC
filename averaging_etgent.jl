@@ -1,24 +1,26 @@
 
 using JLD, Measurements, Statistics
 
-path_src = "./data_with_sgn/2x4/etgent_Nk1/"
-path_dst = "./data_with_sgn/2x4/processed/"
-lambda_list = [0.0] #collect(0.0:0.2:0.8)
-lambdas = length(lambda_list)
+function cumavg(data)
+    return cumsum(data) ./ collect(1:length(data))
+end
 
-S2_avg = zeros(Float64, 1)
-S2_err = zeros(Float64, 1)
+path_src = "./data_with_sgn/3x3/etgent_withreset/"
+path_dst = "./data_with_sgn/3x3/processed/"
 
-S2_conv = Vector{Float64}[]
+filling_list = [(f, f) for f in 1:8]
+sgnprob_conv = Vector{Float64}[]
+S2_signed_conv = Vector{Float64}[]
+S2_unsigned_conv = Vector{Float64}[]
 
 # merge data
-filelist = [filter(x -> match(Regex("EtgEnt_LA4_Nup2_Ndn2_U2.0_lambda$(lambda)_beta12.0_*"), x) !== nothing, readdir(path_src)) for lambda in lambda_list]
+filelist = [filter(x -> match(Regex("EtgEnt_LA3_Nup$(filling[1])_Ndn$(filling[2])_U2.0_beta6.0_*"), x) !== nothing, readdir(path_src)) for filling in filling_list]
 if isempty(filelist[1])
     throw("no files found")
 end
-detgA_list = Vector{Float64}[]
-numer_list = Vector{Float64}[]
-denom_list = Vector{Float64}[]
+# detgA_list = Vector{Float64}[]
+# numer_list = Vector{Float64}[]
+# denom_list = Vector{Float64}[]
 
 # for each lambda
 for filenames in filelist
@@ -28,28 +30,35 @@ for filenames in filelist
     sgnprob_data = vcat([data[i]["sgnprob"] for i in 1:length(filenames)]...)
     detgA_data = vcat([data[i]["sgndetgA"] .* data[i]["absdetgA"] for i in 1:length(filenames)]...)
 
-    push!(detgA_list, detgA_data)
-    push!(numer_list, detgA_data .* sgnprob_data)
-    push!(denom_list, sgnprob_data)
+    push!(sgnprob_conv, cumavg(sgnprob_data))
+
+    push!(S2_unsigned_conv, -log.(abs.(cumavg(detgA_data))))
+
+    push!(S2_signed_conv, -log.(abs.(cumavg(detgA_data .* sgnprob_data) ./ replace(cumavg(sgnprob_data), 0 => 1))))
+
+
+    # push!(detgA_list, detgA_data)
+    # push!(numer_list, detgA_data .* sgnprob_data)
+    # push!(denom_list, sgnprob_data)
 end
 
 # stats
-detgA_avg = mean.(detgA_list)
-detgA_err = std.(detgA_list) ./ length(detgA_list)
-detgA = measurement.(detgA_avg, detgA_err)
+# detgA_avg = mean.(detgA_list)
+# detgA_err = std.(detgA_list) ./ length(detgA_list)
+# detgA = measurement.(detgA_avg, detgA_err)
 
-numer_avg = mean.(numer_list)
-numer_err = std.(numer_list) ./ length(numer_list)
-numer = measurement.(numer_avg, numer_err)
+# numer_avg = mean.(numer_list)
+# numer_err = std.(numer_list) ./ length(numer_list)
+# numer = measurement.(numer_avg, numer_err)
 
-denom_avg = mean.(denom_list)
-denom_err = std.(denom_list) ./ length(denom_list)
-denom = measurement.(denom_avg, denom_err)
+# denom_avg = mean.(denom_list)
+# denom_err = std.(denom_list) ./ length(denom_list)
+# denom = measurement.(denom_avg, denom_err)
 
-S2_unsigned = -log(prod(detgA))
-S2_signed = -log(prod(numer ./ denom))
+# S2_unsigned = -log(prod(detgA))
+# S2_signed = -log(prod(numer ./ denom))
 
-@show S2_unsigned.err
+# @show S2_unsigned.err
 
 # detgA_avg = mean.(detgA_list)
 # detgA_err = std.(detgA_list) ./ length(detgA_list)
@@ -74,8 +83,10 @@ S2_signed = -log(prod(numer ./ denom))
 # denom_run = cumsum(denom_list[1]) ./ collect(1:sweeps)
 # push!(S2_conv, vec(-log.(abs.(numer_run ./ denom_run))))
 
-# jldopen("$(path_dst)" * "EtgEnt_Nup1_Ndn1_LA2_U2.0_beta10.0_Nk1.jld", "w") do file
-#     # write(file, "filling", filling_list)
-#     write(file, "S2_conv", S2_conv)
-# end
+jldopen("$(path_dst)" * "EtgEnt_WithReset_LA3_U2.0_beta6.0.jld", "w") do file
+    write(file, "filling", filling_list)
+    write(file, "sgnprob_conv", sgnprob_conv)
+    write(file, "S2_signed_conv", S2_signed_conv)
+    write(file, "S2_unsigned_conv", S2_unsigned_conv)
+end
 

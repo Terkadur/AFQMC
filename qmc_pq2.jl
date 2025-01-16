@@ -64,7 +64,7 @@ function run_regular_sampling_gs(
             println(i)
         end
 
-        @show replica.sgnprob[]
+        # @show replica.sgnprob[]
         # sgnprob[i] = real(replica.sgnprob[])
         # replica.sgnprob[] = 1
     end
