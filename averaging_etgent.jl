@@ -5,7 +5,7 @@ function cumavg(data)
     return cumsum(data) ./ collect(1:length(data))
 end
 
-path_src = "./data_with_sgn/3x3/etgent_withreset/"
+path_src = "./data_with_sgn/3x3/etgent_noreset/"
 path_dst = "./data_with_sgn/3x3/processed/"
 
 filling_list = [(f, f) for f in 1:8]
@@ -83,7 +83,7 @@ end
 # denom_run = cumsum(denom_list[1]) ./ collect(1:sweeps)
 # push!(S2_conv, vec(-log.(abs.(numer_run ./ denom_run))))
 
-jldopen("$(path_dst)" * "EtgEnt_WithReset_LA3_U2.0_beta6.0.jld", "w") do file
+jldopen("$(path_dst)" * "EtgEnt_NoReset_LA3_U2.0_beta6.0.jld", "w") do file
     write(file, "filling", filling_list)
     write(file, "sgnprob_conv", sgnprob_conv)
     write(file, "S2_signed_conv", S2_signed_conv)
