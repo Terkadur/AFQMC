@@ -18,7 +18,8 @@ function run_incremental_sampling_gs(
 
     detgA = zeros(qmc.nsamples)
     sgndetgA = zeros(Int8, qmc.nsamples)
-    sgnprob = zeros(Int8, qmc.nsamples)
+    sgnprob1 = zeros(Int8, qmc.nsamples)
+    sgnprob2 = zeros(Int8, qmc.nsamples)
 
     # initialize random auxfields
     sweep!(system, qmc, replica, walker1, 1, loop_number=1, jumpReplica=true, initAuxfield=true)
@@ -54,7 +55,6 @@ function run_incremental_sampling_gs(
             print("/")
             println(qmc.nsamples)
             sweep!(system, qmc, replica, walker1, 1, loop_number=bins, jumpReplica=true)
-            @show mean(sgnprob[1:i-1])
         elseif swap_period / 2 - 1 < (i - 1) % swap_period < swap_period - 1
             sweep!(system, qmc, replica, walker2, 2, loop_number=bins, jumpReplica=false)
         else
@@ -62,7 +62,6 @@ function run_incremental_sampling_gs(
             print("/")
             println(qmc.nsamples)
             sweep!(system, qmc, replica, walker2, 2, loop_number=bins, jumpReplica=true)
-            @show mean(sgnprob[1:i-1])
         end
 
         if qmc.forceSymmetry
@@ -72,19 +71,14 @@ function run_incremental_sampling_gs(
             sgndetgA[i] = round(real(replica.sgnlogdetGA_up[] * replica.sgnlogdetGA_dn[]))
         end
 
-        # prod
-        sgnprob[i] = real(walker1.sgnprob[] * walker2.sgnprob[])
-        # switch
-        # if (i - 1) % swap_period <= swap_period / 2 - 1
-        #     sgnprob[i] = real(walker1.sgnprob[])
-        # else
-        #     sgnprob[i] = real(walker2.sgnprob[])
-        # end
+        sgnprob1[i] = real(walker1.sgnprob[])
+        sgnprob2[i] = real(walker2.sgnprob[])
     end
 
     # store the measurement
     jldopen("$(path)/$(filename)", "w") do file
-        write(file, "sgnprob", sgnprob)
+        write(file, "sgnprob1", sgnprob1)
+        write(file, "sgnprob2", sgnprob2)
         write(file, "absdetgA", detgA)
         write(file, "sgndetgA", sgndetgA)
     end

@@ -5,10 +5,10 @@ function cumavg(data)
     return cumsum(data) ./ collect(1:length(data))
 end
 
-path_src = "./data_with_sgn/3x3/etgent_noreset/"
-path_dst = "./data_with_sgn/3x3/processed/"
+path_src = "./data_with_new_sgn/3x3/etgent_prod/"
+path_dst = "./data_with_new_sgn/3x3/processed/"
 
-filling_list = [(f, f) for f in 1:8]
+filling_list = [(4, 4)]
 sgnprob_conv = Vector{Float64}[]
 S2_signed_conv = Vector{Float64}[]
 S2_unsigned_conv = Vector{Float64}[]
@@ -30,11 +30,37 @@ for filenames in filelist
     sgnprob_data = vcat([data[i]["sgnprob"] for i in 1:length(filenames)]...)
     detgA_data = vcat([data[i]["sgndetgA"] .* data[i]["absdetgA"] for i in 1:length(filenames)]...)
 
-    push!(sgnprob_conv, cumavg(sgnprob_data))
+    sgnprob_conv_list = cumavg(sgnprob_data)
+    push!(sgnprob_conv, sgnprob_conv_list)
 
-    push!(S2_unsigned_conv, -log.(abs.(cumavg(detgA_data))))
 
-    push!(S2_signed_conv, -log.(abs.(cumavg(detgA_data .* sgnprob_data) ./ replace(cumavg(sgnprob_data), 0 => 1))))
+    S2_unsigned_conv_list = cumavg(detgA_data)
+    for i in eachindex(S2_unsigned_conv_list)
+        if S2_unsigned_conv_list[i] <= 0
+            S2_unsigned_conv_list[i] = 0
+        else
+            S2_unsigned_conv_list[i] = -log(S2_unsigned_conv_list[i])
+        end
+    end
+    push!(S2_unsigned_conv, S2_unsigned_conv_list[1:16:end])
+
+
+    S2_signed_conv_list = cumavg(detgA_data .* sgnprob_data)
+    for i in eachindex(S2_signed_conv_list)
+        if sgnprob_conv_list[i] == 0
+            S2_signed_conv_list[i] = 0
+            @show i
+        else
+            S2_signed_conv_list[i] /= sgnprob_conv_list[i]
+            if S2_signed_conv_list[i] <= 0
+                S2_signed_conv_list[i] = 0
+                @show i
+            else
+                S2_signed_conv_list[i] = -log(S2_signed_conv_list[i])
+            end
+        end
+    end
+    push!(S2_signed_conv, S2_signed_conv_list[1:16:end])
 
 
     # push!(detgA_list, detgA_data)
@@ -83,7 +109,7 @@ end
 # denom_run = cumsum(denom_list[1]) ./ collect(1:sweeps)
 # push!(S2_conv, vec(-log.(abs.(numer_run ./ denom_run))))
 
-jldopen("$(path_dst)" * "EtgEnt_NoReset_LA3_U2.0_beta6.0.jld", "w") do file
+jldopen("$(path_dst)" * "EtgEnt_Prod_LA3_U2.0_beta6.0.jld", "w") do file
     write(file, "filling", filling_list)
     write(file, "sgnprob_conv", sgnprob_conv)
     write(file, "S2_signed_conv", S2_signed_conv)
