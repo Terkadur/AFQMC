@@ -11,4 +11,4 @@ ulimit -s unlimited
 
 module load julia
 
-time julia --project=@. job_etgent.jl $1 $2
+time julia --project=@. job_etgent.jl $1

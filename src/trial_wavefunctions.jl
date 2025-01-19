@@ -26,11 +26,11 @@ end
 function trial_wf_free_asym(system::System, T::AbstractMatrix)
     wf_hopping = copy(T)
     # creat a small flux
-    map!(x -> x *= (1 + 0.05 * rand()), wf_hopping, T)
+    # map!(x -> x *= (1 + 0.05 * rand()), wf_hopping, T)
 
-    # force Hermiticity
-    wf_hopping += wf_hopping'
-    wf_hopping /= 2
+    # # force Hermiticity
+    # wf_hopping += wf_hopping'
+    # wf_hopping /= 2
     wf_eig = eigen(wf_hopping)
 
     return [wf_eig.vectors[:, 1:system.N[1]], wf_eig.vectors[:, 1:system.N[2]]]

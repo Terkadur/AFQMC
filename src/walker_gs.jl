@@ -49,7 +49,7 @@ struct HubbardWalker{T<:Number,wf<:AbstractMatrix,Fact<:Factorization{T},E,C} <:
     Bc::Cluster{C}
 
     ### Date for debugging ###
-    tmp_r::Vector{T}
+    sgnprob::Base.RefValue{T}
 end
 
 """
@@ -120,14 +120,14 @@ function HubbardWalker(
     Bl = Cluster(Ns, 2 * qmc.stab_interval, T=T)
     Bc = Cluster(Ns, qmc.K, T=T)
 
-    tmp_r = Vector{T}()
+    sgnprob = convert(T, 1)
 
     return HubbardWalker{T,eltype(φ₀),eltype(Fl),eltype(ws.v),eltype(Bl.B)}(
         α, φ₀, φ₀T,
         auxfield, Fl, Fr, ws,
         G, Ul_up, Ur_up, Ul_dn, Ur_dn, Gτ0, G0τ, gτ0_up, g0τ_up, gτ0_dn, g0τ_dn,
         Fτ, Fcl, Fcr, Bl, Bc,
-        tmp_r
+        Ref(sgnprob)
     )
 end
 

@@ -9,8 +9,8 @@ function run_incremental_sampling_gs(
 
     system = extsys.system
 
-    walker1 = HubbardWalker(system, qmc, φ₀)
-    walker2 = HubbardWalker(system, qmc, φ₀)
+    walker1 = HubbardWalker(system, qmc, φ₀, auxfield=ones(Int, (system.V, system.L)))
+    walker2 = HubbardWalker(system, qmc, φ₀, auxfield=ones(Int, (system.V, system.L)))
 
     replica = Replica(extsys, walker1, walker2, λₖ=λₖ)
 
@@ -19,6 +19,10 @@ function run_incremental_sampling_gs(
     detgA = zeros(qmc.nsamples)
     sgndetgA = zeros(Int8, qmc.nsamples)
     sgnprob = zeros(Int8, qmc.nsamples)
+
+    # initialize random auxfields
+    sweep!(system, qmc, replica, walker1, 1, loop_number=1, jumpReplica=true, initAuxfield=true)
+    sweep!(system, qmc, replica, walker2, 2, loop_number=1, jumpReplica=true, initAuxfield=true)
 
     # warm-up steps
     println("Warming up")
@@ -50,7 +54,7 @@ function run_incremental_sampling_gs(
             print("/")
             println(qmc.nsamples)
             sweep!(system, qmc, replica, walker1, 1, loop_number=bins, jumpReplica=true)
-            # @show mean(sgnprob[1:i-1])
+            @show mean(sgnprob[1:i-1])
         elseif swap_period / 2 - 1 < (i - 1) % swap_period < swap_period - 1
             sweep!(system, qmc, replica, walker2, 2, loop_number=bins, jumpReplica=false)
         else
@@ -58,7 +62,7 @@ function run_incremental_sampling_gs(
             print("/")
             println(qmc.nsamples)
             sweep!(system, qmc, replica, walker2, 2, loop_number=bins, jumpReplica=true)
-            # @show mean(sgnprob[1:i-1])
+            @show mean(sgnprob[1:i-1])
         end
 
         if qmc.forceSymmetry
@@ -68,13 +72,14 @@ function run_incremental_sampling_gs(
             sgndetgA[i] = round(real(replica.sgnlogdetGA_up[] * replica.sgnlogdetGA_dn[]))
         end
 
-        # @show replica.sgnprob[]
-        sgnprob[i] = real(replica.sgnprob[])
-        # replica.sgnprob[] = 1
-    end
-
-    if mean(sgnprob) < 0
-        sgnprob .*= -1
+        # prod
+        # sgnprob[i] = real(walker1.sgnprob[] * walker2.sgnprob[])
+        # switch
+        if (i - 1) % swap_period <= swap_period / 2 - 1
+            sgnprob[i] = real(walker1.sgnprob[])
+        else
+            sgnprob[i] = real(walker2.sgnprob[])
+        end
     end
 
     # store the measurement

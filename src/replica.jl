@@ -44,8 +44,6 @@ struct Replica{W,T,E}
     ### LDR Workspace ###
     ws::LDRWorkspace{T,E}
 
-    sgnprob::Base.RefValue{T}
-
     function Replica(extsys::ExtendedSystem, w1::W, w2::W; λₖ::Float64=1.0) where {W}
         T = eltype(w1.G[1])
 
@@ -62,7 +60,6 @@ struct Replica{W,T,E}
         a_dn, b_dn, t_dn = zeros(T, LA), zeros(T, LA), zeros(T, LA)
         Im2GA_up = I - 2 * G₀2_up[Aidx, Aidx]
         Im2GA_dn = I - 2 * G₀2_dn[Aidx, Aidx]
-        sgnprob = convert(T, 1)
 
         return new{W,T,Float64}(
             Aidx,
@@ -70,7 +67,7 @@ struct Replica{W,T,E}
             G₀1_up, G₀2_up, G₀1_dn, G₀2_dn,
             GA⁻¹_up, GA⁻¹_dn, Ref(logdetGA_up), Ref(sgnlogdetGA_up), Ref(logdetGA_dn), Ref(sgnlogdetGA_dn),
             Im2GA_up, Im2GA_dn, a_up, b_up, t_up, a_dn, b_dn, t_dn,
-            λₖ, ws, Ref(sgnprob)
+            λₖ, ws
         )
     end
 end
