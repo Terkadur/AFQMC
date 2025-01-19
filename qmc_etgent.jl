@@ -73,13 +73,13 @@ function run_incremental_sampling_gs(
         end
 
         # prod
-        # sgnprob[i] = real(walker1.sgnprob[] * walker2.sgnprob[])
+        sgnprob[i] = real(walker1.sgnprob[] * walker2.sgnprob[])
         # switch
-        if (i - 1) % swap_period <= swap_period / 2 - 1
-            sgnprob[i] = real(walker1.sgnprob[])
-        else
-            sgnprob[i] = real(walker2.sgnprob[])
-        end
+        # if (i - 1) % swap_period <= swap_period / 2 - 1
+        #     sgnprob[i] = real(walker1.sgnprob[])
+        # else
+        #     sgnprob[i] = real(walker2.sgnprob[])
+        # end
     end
 
     # store the measurement
