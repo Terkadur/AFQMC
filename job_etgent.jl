@@ -1,6 +1,6 @@
 include("./qmc_etgent.jl")
 
-seed = parse(Int64, ARGS[1])
+seed = 1234#parse(Int64, ARGS[1])
 @show seed
 Random.seed!(seed)
 
@@ -9,8 +9,8 @@ const T = hopping_matrix_Hubbard_2d(Lx, Ly, 1.0)
 const U = 2.0
 @show U
 
-const N_up, N_dn = 4, 4 #parse(Int64, ARGS[1]), parse(Int64, ARGS[1])
-const β = 6.0
+const N_up, N_dn = 5, 5
+const β = parse(Float64, ARGS[2])
 @show β
 
 const system = GenericHubbard(
