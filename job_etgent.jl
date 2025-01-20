@@ -9,7 +9,7 @@ const T = hopping_matrix_Hubbard_2d(Lx, Ly, 1.0)
 const U = 2.0
 @show U
 
-const N_up, N_dn = 5, 5 #parse(Int64, ARGS[1]), parse(Int64, ARGS[1])
+const N_up, N_dn = 4, 4 #parse(Int64, ARGS[1]), parse(Int64, ARGS[1])
 const β = 6.0
 @show β
 

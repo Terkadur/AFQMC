@@ -5,12 +5,14 @@ function cumavg(data)
     return cumsum(data) ./ collect(1:length(data))
 end
 
-path_src = "./data_with_new_sgn/3x3/etgent_prod/"
+path_src = "./data_with_new_sgn/3x3/etgent/"
 path_dst = "./data_with_new_sgn/3x3/processed/"
 
-filling_list = [(4, 4)]
-sgnprob_conv = Vector{Float64}[]
-S2_signed_conv = Vector{Float64}[]
+filling_list = [(4, 4), (5, 5)]
+sgnprob_prod_conv = Vector{Float64}[]
+sgnprob_switch_conv = Vector{Float64}[]
+S2_prod_conv = Vector{Float64}[]
+S2_switch_conv = Vector{Float64}[]
 S2_unsigned_conv = Vector{Float64}[]
 
 # merge data
@@ -18,20 +20,30 @@ filelist = [filter(x -> match(Regex("EtgEnt_LA3_Nup$(filling[1])_Ndn$(filling[2]
 if isempty(filelist[1])
     throw("no files found")
 end
-# detgA_list = Vector{Float64}[]
-# numer_list = Vector{Float64}[]
-# denom_list = Vector{Float64}[]
 
-# for each lambda
 for filenames in filelist
     data = load.("$(path_src)" .* filenames)
 
     # merge data across seeds
-    sgnprob_data = vcat([data[i]["sgnprob"] for i in 1:length(filenames)]...)
+    sgnprob1_data = vcat([data[i]["sgnprob1"] for i in 1:length(filenames)]...)
+    sgnprob2_data = vcat([data[i]["sgnprob2"] for i in 1:length(filenames)]...)
+    sgnprob_prod_data = sgnprob1_data .* sgnprob2_data
+    sgnprob_switch_data = zeros(size(sgnprob_prod_data))
+    for i in eachindex(sgnprob_switch_data)
+        if (i-1) % 128 <= 127
+            sgnprob_switch_data[i] = sgnprob1_data[i]
+        else
+            sgnprob_switch_data[i] = sgnprob2_data[i]
+        end
+    end
+
     detgA_data = vcat([data[i]["sgndetgA"] .* data[i]["absdetgA"] for i in 1:length(filenames)]...)
 
-    sgnprob_conv_list = cumavg(sgnprob_data)
-    push!(sgnprob_conv, sgnprob_conv_list)
+    sgnprob_prod_conv_list = cumavg(sgnprob_prod_data)
+    push!(sgnprob_prod_conv, sgnprob_prod_conv_list)
+
+    sgnprob_switch_conv_list = cumavg(sgnprob_switch_data)
+    push!(sgnprob_switch_conv, sgnprob_switch_conv_list)
 
 
     S2_unsigned_conv_list = cumavg(detgA_data)
@@ -45,27 +57,35 @@ for filenames in filelist
     push!(S2_unsigned_conv, S2_unsigned_conv_list[1:16:end])
 
 
-    S2_signed_conv_list = cumavg(detgA_data .* sgnprob_data)
-    for i in eachindex(S2_signed_conv_list)
-        if sgnprob_conv_list[i] == 0
-            S2_signed_conv_list[i] = 0
-            @show i
+    S2_prod_conv_list = cumavg(detgA_data .* sgnprob_prod_data)
+    for i in eachindex(S2_prod_conv_list)
+        if sgnprob_prod_conv_list[i] == 0
+            S2_prod_conv_list[i] = 0
         else
-            S2_signed_conv_list[i] /= sgnprob_conv_list[i]
-            if S2_signed_conv_list[i] <= 0
-                S2_signed_conv_list[i] = 0
-                @show i
+            S2_prod_conv_list[i] /= sgnprob_prod_conv_list[i]
+            if S2_prod_conv_list[i] <= 0
+                S2_prod_conv_list[i] = 0
             else
-                S2_signed_conv_list[i] = -log(S2_signed_conv_list[i])
+                S2_prod_conv_list[i] = -log(S2_prod_conv_list[i])
             end
         end
     end
-    push!(S2_signed_conv, S2_signed_conv_list[1:16:end])
+    push!(S2_prod_conv, S2_prod_conv_list[1:16:end])
 
-
-    # push!(detgA_list, detgA_data)
-    # push!(numer_list, detgA_data .* sgnprob_data)
-    # push!(denom_list, sgnprob_data)
+    S2_switch_conv_list = cumavg(detgA_data .* sgnprob_switch_data)
+    for i in eachindex(S2_switch_conv_list)
+        if sgnprob_switch_conv_list[i] == 0
+            S2_switch_conv_list[i] = 0
+        else
+            S2_switch_conv_list[i] /= sgnprob_switch_conv_list[i]
+            if S2_switch_conv_list[i] <= 0
+                S2_switch_conv_list[i] = 0
+            else
+                S2_switch_conv_list[i] = -log(S2_switch_conv_list[i])
+            end
+        end
+    end
+    push!(S2_switch_conv, S2_switch_conv_list[1:16:end])
 end
 
 # stats
@@ -109,10 +129,12 @@ end
 # denom_run = cumsum(denom_list[1]) ./ collect(1:sweeps)
 # push!(S2_conv, vec(-log.(abs.(numer_run ./ denom_run))))
 
-jldopen("$(path_dst)" * "EtgEnt_Prod_LA3_U2.0_beta6.0.jld", "w") do file
+jldopen("$(path_dst)" * "EtgEnt_LA3_U2.0_beta6.0.jld", "w") do file
     write(file, "filling", filling_list)
-    write(file, "sgnprob_conv", sgnprob_conv)
-    write(file, "S2_signed_conv", S2_signed_conv)
+    write(file, "sgnprob_prod_conv", sgnprob_prod_conv)
+    write(file, "sgnprob_switch_conv", sgnprob_switch_conv)
+    write(file, "S2_prod_conv", S2_prod_conv)
+    write(file, "S2_switch_conv", S2_switch_conv)
     write(file, "S2_unsigned_conv", S2_unsigned_conv)
 end
 
