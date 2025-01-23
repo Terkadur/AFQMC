@@ -9,8 +9,8 @@ const T = hopping_matrix_Hubbard_2d(Lx, Ly, 1.0)
 const U = 2.0
 @show U
 
-const N_up, N_dn = 5, 5
-const β = parse(Float64, ARGS[2])
+const N_up, N_dn = 4, 4
+const β = 6.0
 @show β
 
 const system = GenericHubbard(
