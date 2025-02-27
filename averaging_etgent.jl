@@ -5,8 +5,8 @@ function cumavg(data)
     return cumsum(data) ./ collect(1:length(data))
 end
 
-path_src = "./data_with_sgn/3x3/etgent_noreset/"
-path_dst = "./data_with_sgn/3x3/processed/"
+path_src = "./run_it_back/3x3/etgent/"
+path_dst = "./run_it_back/3x3/processed/"
 
 filling_list = [(f, f) for f in [4]]
 sgnprob_conv = Vector{Float64}[]
