@@ -1,6 +1,6 @@
 include("./qmc_etgent.jl")
 
-seed = 1234 #parse(Int64, ARGS[1])
+seed = parse(Int64, ARGS[1])
 @show seed
 Random.seed!(seed)
 
@@ -52,7 +52,7 @@ const φ₀ = trial_wf_free_asym(system, T)
 const Aidx = collect(1:3)
 const extsys = ExtendedSystem(system, Aidx, subsysOrdering=false)
 
-path = "./run_it_back/3x3"
+path = "./run_it_back_init/3x3"
 
 swap_period = 256
 
