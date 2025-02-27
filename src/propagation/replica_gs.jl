@@ -44,7 +44,7 @@ end
 function sweep!(
     system::Hubbard, qmc::QMC,
     replica::Replica, walker::HubbardWalker, ridx::Int;
-    loop_number::Int=1, jumpReplica::Bool=false
+    loop_number::Int=1, jumpReplica::Bool=false, initAuxfield::Bool=false
 )
     Θ = div(qmc.K, 2)
 
@@ -58,8 +58,8 @@ function sweep!(
         return nothing
     else
         for i in 1:loop_number
-            sweep!_asymmetric(system, qmc, replica, walker, ridx, collect(Θ+1:2Θ))
-            sweep!_asymmetric(system, qmc, replica, walker, ridx, collect(Θ:-1:1))
+            sweep!_asymmetric(system, qmc, replica, walker, ridx, collect(Θ+1:2Θ), initAuxfield)
+            sweep!_asymmetric(system, qmc, replica, walker, ridx, collect(Θ:-1:1), initAuxfield)
         end
 
         jumpReplica && jump_replica!(replica, ridx)
@@ -347,7 +347,7 @@ function local_update!_asymmetric(
     σ::AbstractArray{Int}, j::Int, l::Int, ridx::Int,
     system::Hubbard, walker::HubbardWalker, replica::Replica;
     direction::Int=1,
-    useHeatbath::Bool=true, saveRatio::Bool=true
+    useHeatbath::Bool=true, saveRatio::Bool=true, initAuxfield::Bool=false
 )
     α = walker.α # 2x2 matrix relating to auxiliary field and HS transform
     Gτ_up = walker.G[1]
@@ -366,8 +366,7 @@ function local_update!_asymmetric(
     )
     # accept ratio
     u = useHeatbath ? abs(real(r)) / (1 + abs(real(r))) : abs(real(r))
-
-    if rand() < u
+    if ((rand() < u && !initAuxfield) || (rand() < 0.5 && initAuxfield))
         replica.sgnprob[] *= sign(r)
         # accept the move, update the field and the Green's function
         walker.auxfield[j, l] *= -1
@@ -391,7 +390,7 @@ end
 function update_cluster!_asymmetric(
     walker::HubbardWalker, replica::Replica,
     system::Hubbard, qmc::QMC, cidx::Int, ridx::Int;
-    direction::Int=1
+    direction::Int=1, initAuxfield::Bool=false
 )
     k = qmc.K_interval[cidx]
     Θ = div(qmc.K, 2) # K is the number of time slices divided by 
@@ -449,7 +448,8 @@ function update_cluster!_asymmetric(
                 system, walker, replica,
                 direction=direction,
                 saveRatio=qmc.saveRatio,
-                useHeatbath=qmc.useHeatbath
+                useHeatbath=qmc.useHeatbath, 
+                initAuxfield=initAuxfield
             )
         end
 
@@ -487,7 +487,8 @@ end
 function sweep!_asymmetric(
     system::Hubbard, qmc::QMC,
     replica::Replica, walker::HubbardWalker,
-    ridx::Int, slice::Vector{Int}
+    ridx::Int, slice::Vector{Int},
+    initAuxfield::Bool
 )
     direction = slice[1] < slice[end] ? 1 : 2
     ### set alias ###
@@ -542,7 +543,7 @@ function sweep!_asymmetric(
     # propagate from θ to 2θ
     direction == 1 && begin
         for (i, cidx) in enumerate(slice)
-            update_cluster!_asymmetric(walker, replica, system, qmc, cidx, ridx, direction=1)
+            update_cluster!_asymmetric(walker, replica, system, qmc, cidx, ridx, direction=1, initAuxfield=initAuxfield)
 
             # multiply the updated slice to the right factorization on the left
             Bc_up = walker.Bc.B[cidx-Θ]
@@ -607,7 +608,7 @@ function sweep!_asymmetric(
 
     # propagate from θ to 0
     for (i, cidx) in zip(Iterators.reverse(eachindex(slice)), slice)
-        update_cluster!_asymmetric(walker, replica, system, qmc, cidx, ridx, direction=2)
+        update_cluster!_asymmetric(walker, replica, system, qmc, cidx, ridx, direction=2, initAuxfield=initAuxfield)
 
         # multiply the updated slice to the left factorization on the right
         Bc_up = walker.Bc.B[cidx]

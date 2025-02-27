@@ -9,10 +9,13 @@ function run_incremental_sampling_gs(
 
     system = extsys.system
 
-    walker1 = HubbardWalker(system, qmc, φ₀)
-    walker2 = HubbardWalker(system, qmc, φ₀)
+    walker1 = HubbardWalker(system, qmc, φ₀, auxfield=ones(Int, (system.V, system.L)))
+    walker2 = HubbardWalker(system, qmc, φ₀, auxfield=ones(Int, (system.V, system.L)))
 
     replica = Replica(extsys, walker1, walker2, λₖ=λₖ)
+
+    sweep!(system, qmc, replica, walker1, 1, loop_number=1, jumpReplica=true, initAuxfield=true)
+    sweep!(system, qmc, replica, walker2, 2, loop_number=1, jumpReplica=true, initAuxfield=true)
 
     bins = qmc.measure_interval
 
@@ -50,7 +53,7 @@ function run_incremental_sampling_gs(
             print("/")
             println(qmc.nsamples)
             sweep!(system, qmc, replica, walker1, 1, loop_number=bins, jumpReplica=true)
-            # @show mean(sgnprob[1:i-1])
+            @show mean(sgnprob[1:i-1])
         elseif swap_period / 2 - 1 < (i - 1) % swap_period < swap_period - 1
             sweep!(system, qmc, replica, walker2, 2, loop_number=bins, jumpReplica=false)
         else
@@ -58,7 +61,7 @@ function run_incremental_sampling_gs(
             print("/")
             println(qmc.nsamples)
             sweep!(system, qmc, replica, walker2, 2, loop_number=bins, jumpReplica=true)
-            # @show mean(sgnprob[1:i-1])
+            @show mean(sgnprob[1:i-1])
         end
 
         if qmc.forceSymmetry
@@ -69,11 +72,6 @@ function run_incremental_sampling_gs(
         end
 
         sgnprob[i] = real(replica.sgnprob[])
-        # replica.sgnprob[] = 1
-    end
-
-    if mean(sgnprob) < 0
-        sgnprob .*= -1
     end
 
     # store the measurement

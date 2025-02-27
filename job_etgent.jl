@@ -1,6 +1,6 @@
 include("./qmc_etgent.jl")
 
-seed = parse(Int64, ARGS[1])
+seed = 1234 #parse(Int64, ARGS[1])
 @show seed
 Random.seed!(seed)
 
