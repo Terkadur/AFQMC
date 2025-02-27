@@ -1,6 +1,6 @@
 include("./qmc_etgent.jl")
 
-seed = parse(Int64, ARGS[2])
+seed = parse(Int64, ARGS[1])
 @show seed
 Random.seed!(seed)
 
@@ -9,7 +9,7 @@ const T = hopping_matrix_Hubbard_2d(Lx, Ly, 1.0)
 const U = 2.0
 @show U
 
-const N_up, N_dn = parse(Int64, ARGS[1]), parse(Int64, ARGS[1])
+const N_up, N_dn = 4, 4
 
 const β = 6.0
 @show β
@@ -52,11 +52,11 @@ const φ₀ = trial_wf_free_asym(system, T)
 const Aidx = collect(1:3)
 const extsys = ExtendedSystem(system, Aidx, subsysOrdering=false)
 
-path = "./data_with_sgn/3x3"
+path = "./run_it_back/3x3"
 
 swap_period = 256
 
 const Nₖ = 1
 const λₖ = 0.0
-filename = "etgent_noreset/EtgEnt_LA$(length(Aidx))_Nup$(system.N[1])_Ndn$(system.N[2])_U$(system.U)_beta$(system.β)_seed$(seed).jld"
+filename = "etgent/EtgEnt_LA$(length(Aidx))_Nup$(system.N[1])_Ndn$(system.N[2])_U$(system.U)_beta$(system.β)_seed$(seed).jld"
 @time run_incremental_sampling_gs(extsys, qmc, φ₀, λₖ, Nₖ, path, filename, swap_period)

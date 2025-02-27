@@ -68,7 +68,6 @@ function run_incremental_sampling_gs(
             sgndetgA[i] = round(real(replica.sgnlogdetGA_up[] * replica.sgnlogdetGA_dn[]))
         end
 
-        # @show replica.sgnprob[]
         sgnprob[i] = real(replica.sgnprob[])
         # replica.sgnprob[] = 1
     end
