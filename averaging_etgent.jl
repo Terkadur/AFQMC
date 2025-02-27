@@ -8,7 +8,7 @@ end
 path_src = "./data_with_sgn/3x3/etgent_noreset/"
 path_dst = "./data_with_sgn/3x3/processed/"
 
-filling_list = [(f, f) for f in 1:8]
+filling_list = [(f, f) for f in [4]]
 sgnprob_conv = Vector{Float64}[]
 S2_signed_conv = Vector{Float64}[]
 S2_unsigned_conv = Vector{Float64}[]
